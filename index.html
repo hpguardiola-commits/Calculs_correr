@@ -1,0 +1,605 @@
+<!DOCTYPE html>
+<html lang="ca">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#0a0a0a" />
+  <meta name="description" content="Calculadora de ritme per a trail i running" />
+  <title>RitmeMetre</title>
+  <link rel="manifest" href="manifest.json" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Archivo:wght@500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg: #070809;
+      --surface: #111417;
+      --surface2: #191d23;
+      --border: #2a3040;
+      --accent: #d4ff47;
+      --accent2: #3fffc2;
+      --accent3: #ff5f5a;
+      --text: #f0f4fa;
+      --muted: #6b7585;
+      --font-display: 'Archivo Black', sans-serif;
+      --font-body: 'Archivo', sans-serif;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--font-body);
+      font-weight: 600;
+      min-height: 100dvh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 0 0 3rem;
+      overflow-x: hidden;
+    }
+
+    /* Background grain */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .header {
+      width: 100%;
+      padding: 2rem 2rem 1rem;
+      display: flex;
+      align-items: flex-end;
+      gap: 1rem;
+      border-bottom: 1px solid var(--border);
+      position: relative;
+      z-index: 1;
+    }
+
+    .logo {
+      font-family: var(--font-display);
+      font-size: clamp(2.8rem, 8vw, 4.5rem);
+      letter-spacing: 0.02em;
+      line-height: 1;
+      color: var(--accent);
+    }
+
+    .logo span {
+      color: var(--text);
+    }
+
+    .tagline {
+      font-size: 0.68rem;
+      font-weight: 700;
+      color: var(--muted);
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      padding-bottom: 0.4rem;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 580px;
+      padding: 2rem 1.5rem;
+      position: relative;
+      z-index: 1;
+    }
+
+    .section-label {
+      font-size: 0.72rem;
+      font-weight: 700;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 0.6rem;
+    }
+
+    /* Input group */
+    .input-group {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 2px;
+      margin-bottom: 1rem;
+      overflow: hidden;
+      transition: border-color 0.2s;
+    }
+
+    .input-group:focus-within {
+      border-color: var(--accent);
+    }
+
+    .input-row {
+      display: grid;
+      grid-template-columns: 1fr auto 1fr;
+      align-items: center;
+      gap: 0;
+    }
+
+    .input-label {
+      font-size: 0.65rem;
+      font-weight: 700;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--accent2);
+      padding: 0.7rem 1rem 0.3rem;
+    }
+
+    .input-field {
+      background: transparent;
+      border: none;
+      outline: none;
+      color: var(--text);
+      font-family: var(--font-display);
+      font-size: 1.7rem;
+      font-weight: 900;
+      padding: 0.3rem 1rem 0.9rem;
+      width: 100%;
+    }
+
+    .input-field::placeholder { color: var(--muted); }
+
+    .input-unit {
+      font-size: 0.7rem;
+      font-weight: 700;
+      color: var(--accent2);
+      letter-spacing: 0.1em;
+      padding: 0 1rem;
+      white-space: nowrap;
+      align-self: end;
+      padding-bottom: 1rem;
+    }
+
+    .input-divider {
+      background: var(--border);
+      width: 1px;
+      height: 2.5rem;
+    }
+
+    /* Time picker */
+    .time-row {
+      display: flex;
+      align-items: center;
+      gap: 0;
+    }
+
+    .time-segment {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .time-sep {
+      font-size: 1.4rem;
+      color: var(--muted);
+      padding: 1.2rem 0.3rem 0.8rem;
+      align-self: end;
+    }
+
+    .divider-h {
+      height: 1px;
+      background: var(--border);
+      margin: 0 1rem;
+    }
+
+    /* Button */
+    .btn-calc {
+      width: 100%;
+      background: var(--accent);
+      color: #0b0d0f;
+      border: none;
+      border-radius: 2px;
+      font-family: var(--font-display);
+      font-size: 1.5rem;
+      letter-spacing: 0.1em;
+      padding: 1rem;
+      cursor: pointer;
+      transition: background 0.15s, transform 0.1s;
+      margin-top: 1.5rem;
+    }
+
+    .btn-calc:hover { background: #d8ff6a; }
+    .btn-calc:active { transform: scale(0.99); }
+
+    .btn-reset {
+      width: 100%;
+      background: transparent;
+      color: var(--muted);
+      border: 1px solid var(--border);
+      border-radius: 2px;
+      font-family: var(--font-body);
+      font-size: 0.72rem;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      padding: 0.7rem;
+      cursor: pointer;
+      margin-top: 0.5rem;
+      transition: color 0.2s, border-color 0.2s;
+    }
+    .btn-reset:hover { color: var(--text); border-color: var(--text); }
+
+    /* Results */
+    .results {
+      margin-top: 2rem;
+      display: none;
+      flex-direction: column;
+      gap: 1px;
+      background: var(--border);
+      border: 1px solid var(--border);
+      border-radius: 2px;
+      overflow: hidden;
+      animation: slideIn 0.3s ease;
+    }
+
+    .results.visible { display: flex; }
+
+    @keyframes slideIn {
+      from { opacity: 0; transform: translateY(8px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .result-card {
+      background: var(--surface);
+      padding: 1.2rem 1.4rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .result-card.highlight {
+      background: var(--surface2);
+      border-left: 3px solid var(--accent);
+    }
+
+    .result-card.highlight2 {
+      background: var(--surface2);
+      border-left: 3px solid var(--accent2);
+    }
+
+    .result-label {
+      font-size: 0.72rem;
+      font-weight: 700;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--text);
+      line-height: 1.4;
+    }
+
+    .result-value {
+      font-family: var(--font-display);
+      font-size: 2.6rem;
+      font-weight: 900;
+      letter-spacing: 0.01em;
+      line-height: 1;
+      color: var(--text);
+      white-space: nowrap;
+    }
+
+    .result-card.highlight .result-value { color: var(--accent); }
+    .result-card.highlight2 .result-value { color: var(--accent2); }
+
+    .result-sub {
+      font-size: 0.68rem;
+      font-weight: 600;
+      color: var(--muted);
+      margin-top: 0.3rem;
+    }
+
+    /* Formula note */
+    .formula-box {
+      margin-top: 2rem;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 2px;
+      padding: 1.2rem;
+    }
+
+    .formula-title {
+      font-size: 0.68rem;
+      font-weight: 700;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 0.8rem;
+    }
+
+    .formula-text {
+      font-size: 0.78rem;
+      font-weight: 600;
+      color: var(--text);
+      line-height: 2;
+      opacity: 0.85;
+    }
+
+    .formula-text strong {
+      color: var(--accent);
+      opacity: 1;
+    }
+
+    /* Gradient badge */
+    .badge {
+      display: inline-block;
+      font-size: 0.55rem;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      background: var(--accent3);
+      color: #fff;
+      padding: 0.2rem 0.5rem;
+      border-radius: 1px;
+      margin-left: 0.5rem;
+      vertical-align: middle;
+    }
+
+    /* Ascent toggle */
+    .toggle-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0.8rem 1rem;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 2px;
+      margin-bottom: 1rem;
+      cursor: pointer;
+      transition: border-color 0.2s;
+    }
+
+    .toggle-row:hover { border-color: var(--accent2); }
+
+    .toggle-label-text {
+      font-size: 0.72rem;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--text);
+    }
+
+    .toggle {
+      width: 36px;
+      height: 20px;
+      background: var(--border);
+      border-radius: 10px;
+      position: relative;
+      transition: background 0.2s;
+    }
+
+    .toggle.on { background: var(--accent2); }
+
+    .toggle::after {
+      content: '';
+      position: absolute;
+      width: 14px;
+      height: 14px;
+      background: white;
+      border-radius: 50%;
+      top: 3px;
+      left: 3px;
+      transition: left 0.2s;
+    }
+
+    .toggle.on::after { left: 19px; }
+
+    /* Responsive */
+    @media (max-width: 420px) {
+      .logo { font-size: 2.4rem; }
+      .input-field { font-size: 1.2rem; }
+      .result-value { font-size: 1.8rem; }
+    }
+  </style>
+</head>
+<body>
+
+<header class="header">
+  <div>
+    <div class="logo">Ritme<span>Mètre</span></div>
+    <div class="tagline">Calculadora de ritme · Trail &amp; Running</div>
+  </div>
+</header>
+
+<main class="container">
+
+  <!-- DISTÀNCIA -->
+  <div class="section-label">Distància</div>
+  <div class="input-group">
+    <div class="input-row">
+      <div>
+        <div class="input-label">Kilòmetres</div>
+        <input class="input-field" id="km" type="number" inputmode="decimal" min="0" step="0.01" placeholder="0.00" />
+      </div>
+      <div class="input-unit">km</div>
+    </div>
+  </div>
+
+  <!-- TEMPS -->
+  <div class="section-label">Temps total</div>
+  <div class="input-group">
+    <div class="time-row">
+      <div class="time-segment">
+        <div class="input-label">Hores</div>
+        <input class="input-field" id="hores" type="number" inputmode="numeric" min="0" max="99" placeholder="0" />
+      </div>
+      <div class="time-sep">:</div>
+      <div class="time-segment">
+        <div class="input-label">Minuts</div>
+        <input class="input-field" id="minuts" type="number" inputmode="numeric" min="0" max="59" placeholder="00" />
+      </div>
+      <div class="time-sep">:</div>
+      <div class="time-segment">
+        <div class="input-label">Segons</div>
+        <input class="input-field" id="segons" type="number" inputmode="numeric" min="0" max="59" placeholder="00" />
+      </div>
+    </div>
+  </div>
+
+  <!-- ASCENS TOGGLE -->
+  <div class="toggle-row" id="toggleRow" onclick="toggleAscent()">
+    <span class="toggle-label-text">Afegir ascens <span class="badge">Ritme ajustat</span></span>
+    <div class="toggle" id="toggleBtn"></div>
+  </div>
+
+  <!-- ASCENS INPUT -->
+  <div id="ascentSection" style="display:none">
+    <div class="section-label">Ascens total</div>
+    <div class="input-group">
+      <div class="input-row">
+        <div>
+          <div class="input-label">Metres ascendits</div>
+          <input class="input-field" id="ascens" type="number" inputmode="numeric" min="0" placeholder="0" />
+        </div>
+        <div class="input-unit">m D+</div>
+      </div>
+    </div>
+  </div>
+
+  <button class="btn-calc" onclick="calcular()">CALCULAR</button>
+  <button class="btn-reset" onclick="resetar()">↺ Reiniciar</button>
+
+  <!-- RESULTATS -->
+  <div class="results" id="results">
+    <div class="result-card highlight">
+      <div>
+        <div class="result-label">Ritme real</div>
+        <div class="result-sub">min/km sense correcció</div>
+      </div>
+      <div>
+        <div class="result-value" id="res-ritme">—</div>
+      </div>
+    </div>
+
+    <div class="result-card" id="card-velocitat">
+      <div>
+        <div class="result-label">Velocitat mitja</div>
+      </div>
+      <div>
+        <div class="result-value" id="res-vel">—</div>
+        <div class="result-sub" style="text-align:right">km/h</div>
+      </div>
+    </div>
+
+    <div class="result-card" id="card-ajustat" style="display:none">
+      <div>
+        <div class="result-label">Temps equivalent pla</div>
+        <div class="result-sub" id="sub-temps-extra"></div>
+      </div>
+      <div>
+        <div class="result-value" id="res-temps-eq">—</div>
+      </div>
+    </div>
+
+    <div class="result-card highlight2" id="card-ritme-aj" style="display:none">
+      <div>
+        <div class="result-label">Ritme ajustat</div>
+        <div class="result-sub">amb correcció d'ascens</div>
+      </div>
+      <div>
+        <div class="result-value" id="res-ritme-aj">—</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- FORMULA -->
+  <div class="formula-box" id="formula-box">
+    <div class="formula-title">Com es calcula</div>
+    <div class="formula-text">
+      <strong>Ritme</strong> = Temps total ÷ Distància (min/km)<br>
+      <strong>Temps extra</strong> = Ascens (m) × 1,74 (seg)<br>
+      <strong>Temps equivalent</strong> = Temps real − Temps extra<br>
+      <strong>Ritme ajustat</strong> = Temps equivalent ÷ Distància
+    </div>
+  </div>
+
+</main>
+
+<script>
+  // SW registration
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('sw.js').catch(() => {});
+    });
+  }
+
+  let ascentEnabled = false;
+
+  function toggleAscent() {
+    ascentEnabled = !ascentEnabled;
+    document.getElementById('toggleBtn').classList.toggle('on', ascentEnabled);
+    document.getElementById('ascentSection').style.display = ascentEnabled ? 'block' : 'none';
+  }
+
+  function minToStr(totalMin) {
+    const m = Math.floor(totalMin);
+    const s = Math.round((totalMin - m) * 60);
+    return `${m}'${String(s).padStart(2,'0')}"`;
+  }
+
+  function secsToHMS(secs) {
+    const h = Math.floor(secs / 3600);
+    const m = Math.floor((secs % 3600) / 60);
+    const s = Math.round(secs % 60);
+    if (h > 0) return `${h}h ${String(m).padStart(2,'0')}m ${String(s).padStart(2,'0')}s`;
+    return `${m}m ${String(s).padStart(2,'0')}s`;
+  }
+
+  function calcular() {
+    const km = parseFloat(document.getElementById('km').value) || 0;
+    const h  = parseInt(document.getElementById('hores').value) || 0;
+    const m  = parseInt(document.getElementById('minuts').value) || 0;
+    const s  = parseInt(document.getElementById('segons').value) || 0;
+    const asc = parseInt(document.getElementById('ascens').value) || 0;
+
+    if (km <= 0 || (h + m + s) === 0) {
+      alert('Cal introduir una distància i un temps vàlids.');
+      return;
+    }
+
+    const totalSecs = h * 3600 + m * 60 + s;
+    const totalMin  = totalSecs / 60;
+
+    const ritme = totalMin / km; // min/km
+    const vel   = km / (totalMin / 60); // km/h
+
+    document.getElementById('res-ritme').textContent = minToStr(ritme);
+    document.getElementById('res-vel').textContent   = vel.toFixed(2);
+
+    if (ascentEnabled && asc > 0) {
+      const tempsExtraSecs = asc * 1.74;
+      const totalEquivSecs = Math.max(0, totalSecs - tempsExtraSecs);
+      const ritmeAj = (totalEquivSecs / 60) / km;
+
+      document.getElementById('sub-temps-extra').textContent =
+        `-${secsToHMS(tempsExtraSecs)} per ${asc}m D+`;
+      document.getElementById('res-temps-eq').textContent = secsToHMS(totalEquivSecs);
+      document.getElementById('res-ritme-aj').textContent = minToStr(ritmeAj);
+
+      document.getElementById('card-ajustat').style.display = 'flex';
+      document.getElementById('card-ritme-aj').style.display = 'flex';
+    } else {
+      document.getElementById('card-ajustat').style.display = 'none';
+      document.getElementById('card-ritme-aj').style.display = 'none';
+    }
+
+    const results = document.getElementById('results');
+    results.classList.add('visible');
+    results.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }
+
+  function resetar() {
+    ['km','hores','minuts','segons','ascens'].forEach(id => {
+      document.getElementById(id).value = '';
+    });
+    document.getElementById('results').classList.remove('visible');
+    if (ascentEnabled) toggleAscent();
+  }
+
+  // Enter key
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Enter') calcular();
+  });
+</script>
+</body>
+</html>
