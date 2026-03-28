@@ -1,23 +1,15 @@
 {
-  "name": "RitmeMètre",
-  "short_name": "RitmeMètre",
-  "description": "Calculadora de ritme per a trail i running",
-  "start_url": "https://hpguardiola-commits.github.io/Calculs_correr/index.html",
+  "name": "SudorLab",
+  "short_name": "SudorLab",
+  "description": "Tassa de sudoració i estimació de carreres",
+  "start_url": "./index.html",
   "display": "standalone",
-  "background_color": "#0b0d0f",
-  "theme_color": "#0b0d0f",
+  "background_color": "#0d1117",
+  "theme_color": "#0d1117",
   "orientation": "portrait",
   "icons": [
-    {
-      "src": "icon-192.png",
-      "sizes": "192x192",
-      "type": "image/png"
-    },
-    {
-      "src": "icon-512.png",
-      "sizes": "512x512",
-      "type": "image/png"
-    }
+    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png" }
   ],
   "categories": ["health", "fitness", "sports"],
   "lang": "ca"
