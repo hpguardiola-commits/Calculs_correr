@@ -7,6 +7,10 @@
   <meta name="description" content="Tassa de sudoració - Registre i estimació per carreres"/>
   <title>SudorLab</title>
   <link rel="manifest" href="manifest.json"/>
+  <link rel="apple-touch-icon" href="icon-192.png"/>
+  <meta name="apple-mobile-web-app-capable" content="yes"/>
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+  <meta name="apple-mobile-web-app-title" content="SudorLab"/>
   <link rel="preconnect" href="https://fonts.googleapis.com"/>
   <link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet"/>
   <style>
@@ -591,12 +595,15 @@
 
 <nav class="nav">
   <div class="nav-brand">Sudor<span>Lab</span></div>
-  <div class="nav-tabs">
-    <button class="nav-tab active" onclick="goTo('registre', this)">Sudor</button>
-    <button class="nav-tab" onclick="goTo('historial', this)">Hist.</button>
-    <button class="nav-tab" onclick="goTo('carrera', this)">Carrera</button>
-    <button class="nav-tab" onclick="goTo('ritme', this)">Ritme</button>
-    <button class="nav-tab" onclick="goTo('dades', this)">Dades</button>
+  <div style="display:flex;align-items:center;gap:0.5rem">
+    <button id="install-btn" onclick="installApp()" style="display:none;background:var(--accent3);color:#0d1117;border:none;border-radius:6px;font-family:var(--font-b);font-size:0.65rem;font-weight:700;padding:0.4rem 0.7rem;cursor:pointer;letter-spacing:0.05em">⬇ Instal·lar</button>
+    <div class="nav-tabs">
+      <button class="nav-tab active" onclick="goTo('registre', this)">Sudor</button>
+      <button class="nav-tab" onclick="goTo('historial', this)">Hist.</button>
+      <button class="nav-tab" onclick="goTo('carrera', this)">Carrera</button>
+      <button class="nav-tab" onclick="goTo('ritme', this)">Ritme</button>
+      <button class="nav-tab" onclick="goTo('dades', this)">Dades</button>
+    </div>
   </div>
 </nav>
 
@@ -1320,6 +1327,30 @@ function esborrarTot() {
 if ('serviceWorker' in navigator) {
   navigator.serviceWorker.register('sw.js').catch(() => {});
 }
+
+// ── INSTAL·LACIÓ PWA ──
+let deferredPrompt = null;
+window.addEventListener('beforeinstallprompt', e => {
+  e.preventDefault();
+  deferredPrompt = e;
+  document.getElementById('install-btn').style.display = 'block';
+});
+
+function installApp() {
+  if (!deferredPrompt) return;
+  deferredPrompt.prompt();
+  deferredPrompt.userChoice.then(choice => {
+    if (choice.outcome === 'accepted') {
+      document.getElementById('install-btn').style.display = 'none';
+    }
+    deferredPrompt = null;
+  });
+}
+
+window.addEventListener('appinstalled', () => {
+  document.getElementById('install-btn').style.display = 'none';
+  deferredPrompt = null;
+});
 </script>
 </body>
 </html>

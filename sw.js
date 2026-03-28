@@ -1,5 +1,15 @@
-const CACHE = 'sudorlab-v1';
-const FILES = ['./', './index.html', './manifest.json'];
+const CACHE = 'sudorlab-v2';
+const FILES = [
+  './',
+  './index.html',
+  './manifest.json',
+  './icon-48.png',
+  './icon-72.png',
+  './icon-96.png',
+  './icon-144.png',
+  './icon-192.png',
+  './icon-512.png'
+];
 
 self.addEventListener('install', e => {
   e.waitUntil(caches.open(CACHE).then(c => c.addAll(FILES)));
