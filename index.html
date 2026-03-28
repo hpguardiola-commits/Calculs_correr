@@ -1,27 +1,29 @@
 <!DOCTYPE html>
 <html lang="ca">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="theme-color" content="#0a0a0a" />
-  <meta name="description" content="Calculadora de ritme per a trail i running" />
-  <title>RitmeMetre</title>
-  <link rel="manifest" href="manifest.json" />
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Archivo:wght@500;600;700&display=swap" rel="stylesheet" />
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="theme-color" content="#0d1117"/>
+  <meta name="description" content="Tassa de sudoració - Registre i estimació per carreres"/>
+  <title>SudorLab</title>
+  <link rel="manifest" href="manifest.json"/>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet"/>
   <style>
     :root {
-      --bg: #070809;
-      --surface: #111417;
-      --surface2: #191d23;
-      --border: #2a3040;
-      --accent: #d4ff47;
-      --accent2: #3fffc2;
-      --accent3: #ff5f5a;
-      --text: #f0f4fa;
-      --muted: #6b7585;
-      --font-display: 'Archivo Black', sans-serif;
-      --font-body: 'Archivo', sans-serif;
+      --bg: #0d1117;
+      --bg2: #161b24;
+      --surface: #1c2333;
+      --surface2: #222d3f;
+      --border: #2d3a50;
+      --accent: #38bdf8;
+      --accent2: #fb923c;
+      --accent3: #34d399;
+      --warn: #f87171;
+      --text: #e2e8f4;
+      --muted: #64748b;
+      --font-h: 'Syne', sans-serif;
+      --font-b: 'IBM Plex Sans', sans-serif;
     }
 
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -29,577 +31,1295 @@
     body {
       background: var(--bg);
       color: var(--text);
-      font-family: var(--font-body);
-      font-weight: 600;
+      font-family: var(--font-b);
       min-height: 100dvh;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      padding: 0 0 3rem;
       overflow-x: hidden;
     }
 
-    /* Background grain */
-    body::before {
-      content: '';
-      position: fixed;
-      inset: 0;
-      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
-      pointer-events: none;
-      z-index: 0;
-    }
-
-    .header {
-      width: 100%;
-      padding: 2rem 2rem 1rem;
-      display: flex;
-      align-items: flex-end;
-      gap: 1rem;
+    /* ── NAV ── */
+    .nav {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: rgba(13,17,23,0.92);
+      backdrop-filter: blur(12px);
       border-bottom: 1px solid var(--border);
-      position: relative;
-      z-index: 1;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0.9rem 1.2rem;
     }
 
-    .logo {
-      font-family: var(--font-display);
-      font-size: clamp(2.8rem, 8vw, 4.5rem);
-      letter-spacing: 0.02em;
-      line-height: 1;
+    .nav-brand {
+      font-family: var(--font-h);
+      font-size: 1.3rem;
       color: var(--accent);
+      letter-spacing: -0.01em;
+    }
+    .nav-brand span { color: var(--accent2); }
+
+    .nav-tabs {
+      display: flex;
+      gap: 0.3rem;
     }
 
-    .logo span {
-      color: var(--text);
-    }
-
-    .tagline {
-      font-size: 0.68rem;
-      font-weight: 700;
+    .nav-tab {
+      background: transparent;
+      border: 1px solid transparent;
+      border-radius: 6px;
       color: var(--muted);
-      letter-spacing: 0.14em;
-      text-transform: uppercase;
-      padding-bottom: 0.4rem;
-    }
-
-    .container {
-      width: 100%;
-      max-width: 580px;
-      padding: 2rem 1.5rem;
-      position: relative;
-      z-index: 1;
-    }
-
-    .section-label {
+      font-family: var(--font-b);
       font-size: 0.72rem;
-      font-weight: 700;
-      letter-spacing: 0.18em;
+      font-weight: 600;
+      letter-spacing: 0.05em;
       text-transform: uppercase;
-      color: var(--accent);
-      margin-bottom: 0.6rem;
+      padding: 0.45rem 0.8rem;
+      cursor: pointer;
+      transition: all 0.15s;
     }
-
-    /* Input group */
-    .input-group {
+    .nav-tab.active {
       background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 2px;
-      margin-bottom: 1rem;
-      overflow: hidden;
-      transition: border-color 0.2s;
+      border-color: var(--border);
+      color: var(--accent);
     }
 
-    .input-group:focus-within {
-      border-color: var(--accent);
-    }
+    /* ── PAGES ── */
+    .page { display: none; padding: 1.2rem; max-width: 600px; margin: 0 auto; }
+    .page.active { display: block; animation: fadeUp 0.25s ease; }
 
-    .input-row {
-      display: grid;
-      grid-template-columns: 1fr auto 1fr;
-      align-items: center;
-      gap: 0;
-    }
-
-    .input-label {
-      font-size: 0.65rem;
-      font-weight: 700;
-      letter-spacing: 0.14em;
-      text-transform: uppercase;
-      color: var(--accent2);
-      padding: 0.7rem 1rem 0.3rem;
-    }
-
-    .input-field {
-      background: transparent;
-      border: none;
-      outline: none;
-      color: var(--text);
-      font-family: var(--font-display);
-      font-size: 1.7rem;
-      font-weight: 900;
-      padding: 0.3rem 1rem 0.9rem;
-      width: 100%;
-    }
-
-    .input-field::placeholder { color: var(--muted); }
-
-    .input-unit {
-      font-size: 0.7rem;
-      font-weight: 700;
-      color: var(--accent2);
-      letter-spacing: 0.1em;
-      padding: 0 1rem;
-      white-space: nowrap;
-      align-self: end;
-      padding-bottom: 1rem;
-    }
-
-    .input-divider {
-      background: var(--border);
-      width: 1px;
-      height: 2.5rem;
-    }
-
-    /* Time picker */
-    .time-row {
-      display: flex;
-      align-items: center;
-      gap: 0;
-    }
-
-    .time-segment {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-    }
-
-    .time-sep {
-      font-size: 1.4rem;
-      color: var(--muted);
-      padding: 1.2rem 0.3rem 0.8rem;
-      align-self: end;
-    }
-
-    .divider-h {
-      height: 1px;
-      background: var(--border);
-      margin: 0 1rem;
-    }
-
-    /* Button */
-    .btn-calc {
-      width: 100%;
-      background: var(--accent);
-      color: #0b0d0f;
-      border: none;
-      border-radius: 2px;
-      font-family: var(--font-display);
-      font-size: 1.5rem;
-      letter-spacing: 0.1em;
-      padding: 1rem;
-      cursor: pointer;
-      transition: background 0.15s, transform 0.1s;
-      margin-top: 1.5rem;
-    }
-
-    .btn-calc:hover { background: #d8ff6a; }
-    .btn-calc:active { transform: scale(0.99); }
-
-    .btn-reset {
-      width: 100%;
-      background: transparent;
-      color: var(--muted);
-      border: 1px solid var(--border);
-      border-radius: 2px;
-      font-family: var(--font-body);
-      font-size: 0.72rem;
-      font-weight: 700;
-      letter-spacing: 0.12em;
-      text-transform: uppercase;
-      padding: 0.7rem;
-      cursor: pointer;
-      margin-top: 0.5rem;
-      transition: color 0.2s, border-color 0.2s;
-    }
-    .btn-reset:hover { color: var(--text); border-color: var(--text); }
-
-    /* Results */
-    .results {
-      margin-top: 2rem;
-      display: none;
-      flex-direction: column;
-      gap: 1px;
-      background: var(--border);
-      border: 1px solid var(--border);
-      border-radius: 2px;
-      overflow: hidden;
-      animation: slideIn 0.3s ease;
-    }
-
-    .results.visible { display: flex; }
-
-    @keyframes slideIn {
-      from { opacity: 0; transform: translateY(8px); }
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(6px); }
       to   { opacity: 1; transform: translateY(0); }
     }
 
-    .result-card {
+    /* ── TYPOGRAPHY ── */
+    .page-title {
+      font-family: var(--font-h);
+      font-size: 1.6rem;
+      font-weight: 800;
+      color: var(--text);
+      margin-bottom: 0.3rem;
+    }
+    .page-sub {
+      font-size: 0.78rem;
+      color: var(--muted);
+      margin-bottom: 1.5rem;
+      font-weight: 500;
+    }
+
+    /* ── FORM ── */
+    .form-section {
       background: var(--surface);
-      padding: 1.2rem 1.4rem;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 1.1rem;
+      margin-bottom: 1rem;
+    }
+
+    .form-section-title {
+      font-size: 0.65rem;
+      font-weight: 700;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 1rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .form-section-title::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: var(--border);
+    }
+
+    .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.8rem; }
+    .form-grid.cols1 { grid-template-columns: 1fr; }
+
+    .field { display: flex; flex-direction: column; gap: 0.35rem; }
+
+    .field label {
+      font-size: 0.68rem;
+      font-weight: 700;
+      color: var(--muted);
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+    .field label .req { color: var(--warn); margin-left: 2px; }
+
+    .field input, .field select {
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      color: var(--text);
+      font-family: var(--font-b);
+      font-size: 1rem;
+      font-weight: 600;
+      padding: 0.6rem 0.8rem;
+      outline: none;
+      transition: border-color 0.15s;
+      width: 100%;
+    }
+    .field input:focus, .field select:focus { border-color: var(--accent); }
+    .field input::placeholder { color: var(--muted); font-weight: 400; }
+
+    .field .unit {
+      font-size: 0.65rem;
+      color: var(--accent2);
+      font-weight: 700;
+      letter-spacing: 0.05em;
+      margin-top: -0.15rem;
+    }
+
+    /* ── RESULT BOX ── */
+    .result-hero {
+      background: linear-gradient(135deg, var(--surface2) 0%, #1a2a3a 100%);
+      border: 1px solid var(--accent);
+      border-radius: 12px;
+      padding: 1.4rem;
+      margin: 1.2rem 0;
+      display: none;
+      animation: fadeUp 0.3s ease;
+    }
+    .result-hero.show { display: block; }
+
+    .result-main {
+      display: flex;
+      align-items: baseline;
+      gap: 0.4rem;
+      margin-bottom: 0.3rem;
+    }
+    .result-num {
+      font-family: var(--font-h);
+      font-size: 3.2rem;
+      font-weight: 800;
+      color: var(--accent);
+      line-height: 1;
+    }
+    .result-unit {
+      font-size: 0.85rem;
+      font-weight: 700;
+      color: var(--muted);
+      letter-spacing: 0.05em;
+    }
+    .result-label {
+      font-size: 0.7rem;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 1rem;
+    }
+
+    .result-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.6rem;
+    }
+    .result-mini {
+      background: rgba(0,0,0,0.25);
+      border-radius: 6px;
+      padding: 0.7rem;
+    }
+    .result-mini-val {
+      font-family: var(--font-h);
+      font-size: 1.2rem;
+      font-weight: 700;
+      color: var(--text);
+    }
+    .result-mini-label {
+      font-size: 0.62rem;
+      font-weight: 600;
+      color: var(--muted);
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      margin-top: 0.15rem;
+    }
+
+    /* ── HYDRATION BADGE ── */
+    .hydro-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      border-radius: 6px;
+      padding: 0.45rem 0.8rem;
+      font-size: 0.72rem;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      margin-top: 0.8rem;
+    }
+    .hydro-badge.ok   { background: rgba(52,211,153,0.15); color: var(--accent3); border: 1px solid rgba(52,211,153,0.3); }
+    .hydro-badge.mid  { background: rgba(251,146,60,0.15); color: var(--accent2); border: 1px solid rgba(251,146,60,0.3); }
+    .hydro-badge.bad  { background: rgba(248,113,113,0.15); color: var(--warn); border: 1px solid rgba(248,113,113,0.3); }
+
+    /* ── BUTTON ── */
+    .btn {
+      width: 100%;
+      background: var(--accent);
+      color: #0d1117;
+      border: none;
+      border-radius: 8px;
+      font-family: var(--font-h);
+      font-size: 1.1rem;
+      font-weight: 800;
+      letter-spacing: 0.03em;
+      padding: 0.9rem;
+      cursor: pointer;
+      transition: background 0.15s, transform 0.1s;
+      margin-top: 0.5rem;
+    }
+    .btn:hover { background: #7dd3fc; }
+    .btn:active { transform: scale(0.99); }
+    .btn.secondary {
+      background: transparent;
+      color: var(--muted);
+      border: 1px solid var(--border);
+      font-family: var(--font-b);
+      font-size: 0.8rem;
+      font-weight: 600;
+      margin-top: 0.4rem;
+      padding: 0.65rem;
+    }
+    .btn.secondary:hover { color: var(--text); border-color: var(--text); background: transparent; }
+
+    .btn.orange {
+      background: var(--accent2);
+    }
+    .btn.orange:hover { background: #fdba74; }
+
+    /* ── HISTORY ── */
+    .history-empty {
+      text-align: center;
+      padding: 3rem 1rem;
+      color: var(--muted);
+      font-size: 0.85rem;
+      font-weight: 500;
+    }
+    .history-empty .icon { font-size: 2.5rem; margin-bottom: 0.8rem; }
+
+    .session-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 1rem 1.1rem;
+      margin-bottom: 0.8rem;
+      cursor: pointer;
+      transition: border-color 0.15s;
+      position: relative;
+    }
+    .session-card:hover { border-color: var(--accent); }
+
+    .session-card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 0.7rem;
+    }
+    .session-date {
+      font-size: 0.68rem;
+      font-weight: 700;
+      color: var(--muted);
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+    .session-rate {
+      font-family: var(--font-h);
+      font-size: 1.6rem;
+      font-weight: 800;
+      color: var(--accent);
+      line-height: 1;
+    }
+    .session-rate span {
+      font-family: var(--font-b);
+      font-size: 0.65rem;
+      font-weight: 600;
+      color: var(--muted);
+    }
+
+    .session-chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.4rem;
+    }
+    .chip {
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      font-size: 0.65rem;
+      font-weight: 600;
+      color: var(--muted);
+      padding: 0.2rem 0.5rem;
+      letter-spacing: 0.05em;
+    }
+    .chip.hi { color: var(--accent2); border-color: rgba(251,146,60,0.3); }
+
+    .delete-btn {
+      position: absolute;
+      top: 0.8rem;
+      right: 0.8rem;
+      background: transparent;
+      border: none;
+      color: var(--muted);
+      font-size: 1rem;
+      cursor: pointer;
+      line-height: 1;
+      padding: 0.2rem;
+      opacity: 0.4;
+      transition: opacity 0.15s;
+    }
+    .delete-btn:hover { opacity: 1; color: var(--warn); }
+
+    /* ── RACE ESTIMATOR ── */
+    .estimator-card {
+      background: linear-gradient(135deg, #1a1f2e 0%, #1c2a1e 100%);
+      border: 1px solid var(--accent3);
+      border-radius: 12px;
+      padding: 1.3rem;
+      margin-bottom: 1rem;
+    }
+
+    .race-result-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.8rem;
+      margin-top: 1rem;
+    }
+
+    .race-stat {
+      background: rgba(0,0,0,0.3);
+      border-radius: 8px;
+      padding: 0.9rem;
+    }
+    .race-stat-val {
+      font-family: var(--font-h);
+      font-size: 1.5rem;
+      font-weight: 800;
+      color: var(--accent3);
+      line-height: 1;
+    }
+    .race-stat-label {
+      font-size: 0.62rem;
+      font-weight: 700;
+      color: var(--muted);
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      margin-top: 0.2rem;
+    }
+
+    .race-stat.warn .race-stat-val { color: var(--warn); }
+    .race-stat.orange .race-stat-val { color: var(--accent2); }
+    .race-stat.blue .race-stat-val { color: var(--accent); }
+
+    .info-box {
+      background: rgba(56,189,248,0.07);
+      border: 1px solid rgba(56,189,248,0.2);
+      border-radius: 8px;
+      padding: 0.9rem 1rem;
+      font-size: 0.75rem;
+      font-weight: 500;
+      color: var(--text);
+      line-height: 1.7;
+      margin-top: 0.8rem;
+    }
+    .info-box strong { color: var(--accent); font-weight: 700; }
+
+    .avg-banner {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 0.9rem 1rem;
       display: flex;
       justify-content: space-between;
       align-items: center;
-      gap: 1rem;
+      margin-bottom: 1rem;
     }
-
-    .result-card.highlight {
-      background: var(--surface2);
-      border-left: 3px solid var(--accent);
-    }
-
-    .result-card.highlight2 {
-      background: var(--surface2);
-      border-left: 3px solid var(--accent2);
-    }
-
-    .result-label {
-      font-size: 0.72rem;
-      font-weight: 700;
-      letter-spacing: 0.14em;
-      text-transform: uppercase;
-      color: var(--text);
-      line-height: 1.4;
-    }
-
-    .result-value {
-      font-family: var(--font-display);
-      font-size: 2.6rem;
-      font-weight: 900;
-      letter-spacing: 0.01em;
-      line-height: 1;
-      color: var(--text);
-      white-space: nowrap;
-    }
-
-    .result-card.highlight .result-value { color: var(--accent); }
-    .result-card.highlight2 .result-value { color: var(--accent2); }
-
-    .result-sub {
+    .avg-banner-label {
       font-size: 0.68rem;
-      font-weight: 600;
+      font-weight: 700;
       color: var(--muted);
-      margin-top: 0.3rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+    }
+    .avg-banner-val {
+      font-family: var(--font-h);
+      font-size: 1.4rem;
+      font-weight: 800;
+      color: var(--accent);
     }
 
-    /* Formula note */
-    .formula-box {
-      margin-top: 2rem;
-      background: var(--surface);
+    /* Separator */
+    .sep {
+      height: 1px;
+      background: var(--border);
+      margin: 1.2rem 0;
+    }
+
+    @media (max-width: 380px) {
+      .form-grid { grid-template-columns: 1fr; }
+      .result-num { font-size: 2.6rem; }
+    }
+
+    /* ── NAV compact for 5 tabs ── */
+    .nav-tab { padding: 0.4rem 0.55rem; font-size: 0.65rem; }
+
+    /* ── RITME PAGE ── */
+    .pace-hero {
+      background: linear-gradient(135deg, #1a1f2e 0%, #1f1a2e 100%);
       border: 1px solid var(--border);
-      border-radius: 2px;
-      padding: 1.2rem;
+      border-radius: 12px;
+      padding: 1.3rem;
+      margin-bottom: 1rem;
     }
-
-    .formula-title {
-      font-size: 0.68rem;
-      font-weight: 700;
-      letter-spacing: 0.18em;
-      text-transform: uppercase;
+    .pace-result-row {
+      display: flex;
+      align-items: baseline;
+      gap: 0.4rem;
+    }
+    .pace-big {
+      font-family: var(--font-h);
+      font-size: 3rem;
+      font-weight: 800;
       color: var(--accent);
-      margin-bottom: 0.8rem;
+      line-height: 1;
     }
+    .pace-unit { font-size: 0.8rem; font-weight: 700; color: var(--muted); }
 
-    .formula-text {
-      font-size: 0.78rem;
-      font-weight: 600;
+    .pace-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.7rem;
+      margin-top: 1rem;
+    }
+    .pace-stat {
+      background: rgba(0,0,0,0.3);
+      border-radius: 8px;
+      padding: 0.8rem;
+    }
+    .pace-stat-val {
+      font-family: var(--font-h);
+      font-size: 1.4rem;
+      font-weight: 800;
       color: var(--text);
-      line-height: 2;
-      opacity: 0.85;
+      line-height: 1;
     }
-
-    .formula-text strong {
-      color: var(--accent);
-      opacity: 1;
-    }
-
-    /* Gradient badge */
-    .badge {
-      display: inline-block;
-      font-size: 0.55rem;
-      letter-spacing: 0.15em;
+    .pace-stat-lbl {
+      font-size: 0.6rem;
+      font-weight: 700;
+      color: var(--muted);
+      letter-spacing: 0.1em;
       text-transform: uppercase;
-      background: var(--accent3);
-      color: #fff;
-      padding: 0.2rem 0.5rem;
-      border-radius: 1px;
-      margin-left: 0.5rem;
-      vertical-align: middle;
+      margin-top: 0.2rem;
     }
+    .pace-stat.green .pace-stat-val { color: var(--accent3); }
+    .pace-stat.orange .pace-stat-val { color: var(--accent2); }
+    .pace-stat.blue .pace-stat-val { color: var(--accent); }
 
-    /* Ascent toggle */
+    /* ascent toggle */
     .toggle-row {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: 0.8rem 1rem;
       background: var(--surface);
       border: 1px solid var(--border);
-      border-radius: 2px;
+      border-radius: 8px;
+      padding: 0.8rem 1rem;
       margin-bottom: 1rem;
       cursor: pointer;
-      transition: border-color 0.2s;
     }
-
-    .toggle-row:hover { border-color: var(--accent2); }
-
-    .toggle-label-text {
-      font-size: 0.72rem;
-      font-weight: 700;
-      letter-spacing: 0.1em;
-      text-transform: uppercase;
-      color: var(--text);
-    }
-
-    .toggle {
-      width: 36px;
-      height: 20px;
+    .toggle-label { font-size: 0.7rem; font-weight: 700; color: var(--text); letter-spacing: 0.08em; }
+    .toggle-sw {
+      width: 38px; height: 22px;
       background: var(--border);
-      border-radius: 10px;
+      border-radius: 11px;
       position: relative;
       transition: background 0.2s;
+      flex-shrink: 0;
     }
-
-    .toggle.on { background: var(--accent2); }
-
-    .toggle::after {
-      content: '';
+    .toggle-sw.on { background: var(--accent2); }
+    .toggle-sw::after {
+      content:'';
       position: absolute;
-      width: 14px;
-      height: 14px;
+      width: 16px; height: 16px;
       background: white;
       border-radius: 50%;
-      top: 3px;
-      left: 3px;
+      top: 3px; left: 3px;
       transition: left 0.2s;
     }
+    .toggle-sw.on::after { left: 19px; }
 
-    .toggle.on::after { left: 19px; }
-
-    /* Responsive */
-    @media (max-width: 420px) {
-      .logo { font-size: 2.4rem; }
-      .input-field { font-size: 1.2rem; }
-      .result-value { font-size: 1.8rem; }
+    /* ── DADES PAGE ── */
+    .dades-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 1.2rem;
+      margin-bottom: 1rem;
     }
+    .dades-card-title {
+      font-size: 0.65rem;
+      font-weight: 700;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 0.8rem;
+    }
+    .dades-info {
+      font-size: 0.8rem;
+      color: var(--muted);
+      font-weight: 500;
+      line-height: 1.6;
+      margin-bottom: 0.8rem;
+    }
+    .btn.green { background: var(--accent3); }
+    .btn.green:hover { background: #6ee7b7; }
+    .btn.red { background: var(--warn); }
+    .btn.red:hover { background: #fca5a5; }
+    .btn.small {
+      font-family: var(--font-b);
+      font-size: 0.8rem;
+      font-weight: 700;
+      padding: 0.7rem;
+      margin-top: 0;
+      margin-bottom: 0.5rem;
+    }
+    #import-file { display: none; }
   </style>
 </head>
 <body>
 
-<header class="header">
-  <div>
-    <div class="logo">Ritme<span>Mètre</span></div>
-    <div class="tagline">Calculadora de ritme · Trail &amp; Running</div>
+<nav class="nav">
+  <div class="nav-brand">Sudor<span>Lab</span></div>
+  <div class="nav-tabs">
+    <button class="nav-tab active" onclick="goTo('registre', this)">Sudor</button>
+    <button class="nav-tab" onclick="goTo('historial', this)">Hist.</button>
+    <button class="nav-tab" onclick="goTo('carrera', this)">Carrera</button>
+    <button class="nav-tab" onclick="goTo('ritme', this)">Ritme</button>
+    <button class="nav-tab" onclick="goTo('dades', this)">Dades</button>
   </div>
-</header>
+</nav>
 
-<main class="container">
+<!-- ══════════════════ PÀGINA 1: REGISTRE ══════════════════ -->
+<div class="page active" id="page-registre">
+  <div class="page-title">Nova sessió</div>
+  <div class="page-sub">Registra els teus paràmetres per calcular la tassa de sudoració</div>
+
+  <!-- PES -->
+  <div class="form-section">
+    <div class="form-section-title">Pes corporal</div>
+    <div class="form-grid">
+      <div class="field">
+        <label>Pes abans <span class="req">*</span></label>
+        <input id="pes_abans" type="number" inputmode="decimal" step="0.1" placeholder="70.0"/>
+        <div class="unit">KG</div>
+      </div>
+      <div class="field">
+        <label>Pes després <span class="req">*</span></label>
+        <input id="pes_despres" type="number" inputmode="decimal" step="0.1" placeholder="69.0"/>
+        <div class="unit">KG</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- LÍQUIDS -->
+  <div class="form-section">
+    <div class="form-section-title">Ingesta i eliminació</div>
+    <div class="form-grid">
+      <div class="field">
+        <label>Líquid ingerit</label>
+        <input id="liquid" type="number" inputmode="numeric" placeholder="500"/>
+        <div class="unit">ML</div>
+      </div>
+      <div class="field">
+        <label>Orina eliminada</label>
+        <input id="orina" type="number" inputmode="numeric" placeholder="0"/>
+        <div class="unit">ML</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SESSIÓ -->
+  <div class="form-section">
+    <div class="form-section-title">Sessió</div>
+    <div class="form-grid">
+      <div class="field">
+        <label>Durada <span class="req">*</span></label>
+        <input id="durada" type="number" inputmode="numeric" placeholder="60"/>
+        <div class="unit">MIN</div>
+      </div>
+      <div class="field">
+        <label>Ritme</label>
+        <input id="ritme" type="text" inputmode="decimal" placeholder="5:30"/>
+        <div class="unit">MIN/KM</div>
+      </div>
+      <div class="field">
+        <label>FC mitja</label>
+        <input id="fc" type="number" inputmode="numeric" placeholder="155"/>
+        <div class="unit">PPM</div>
+      </div>
+      <div class="field">
+        <label>Calories cremades</label>
+        <input id="calories" type="number" inputmode="numeric" placeholder="600"/>
+        <div class="unit">KCAL</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- AMBIENT -->
+  <div class="form-section">
+    <div class="form-section-title">Condicions ambientals</div>
+    <div class="form-grid">
+      <div class="field">
+        <label>Temperatura <span class="req">*</span></label>
+        <input id="temp" type="number" inputmode="numeric" placeholder="22"/>
+        <div class="unit">°C</div>
+      </div>
+      <div class="field">
+        <label>Humetat relativa</label>
+        <input id="humetat" type="number" inputmode="numeric" placeholder="65"/>
+        <div class="unit">%</div>
+      </div>
+    </div>
+  </div>
+
+  <button class="btn" onclick="calcular()">CALCULAR TASSA</button>
+  <button class="btn secondary" onclick="resetar()">↺ Netejar camps</button>
+
+  <!-- RESULTAT -->
+  <div class="result-hero" id="resultat">
+    <div class="result-label">Tassa de sudoració</div>
+    <div class="result-main">
+      <div class="result-num" id="r-tassa">—</div>
+      <div class="result-unit">mL/h</div>
+    </div>
+    <div id="r-badge"></div>
+
+    <div class="sep"></div>
+
+    <div class="result-grid">
+      <div class="result-mini">
+        <div class="result-mini-val" id="r-perdua">—</div>
+        <div class="result-mini-label">Pèrdua neta (mL)</div>
+      </div>
+      <div class="result-mini">
+        <div class="result-mini-val" id="r-pct">—</div>
+        <div class="result-mini-label">% Pes perdut</div>
+      </div>
+      <div class="result-mini">
+        <div class="result-mini-val" id="r-recomanat">—</div>
+        <div class="result-mini-label">Ingesta/hora ideal</div>
+      </div>
+      <div class="result-mini">
+        <div class="result-mini-val" id="r-deficit">—</div>
+        <div class="result-mini-label">Dèficit sessió (mL)</div>
+      </div>
+    </div>
+
+    <button class="btn" style="margin-top:1rem" onclick="guardar()">💾 GUARDAR SESSIÓ</button>
+  </div>
+</div>
+
+<!-- ══════════════════ PÀGINA 2: HISTORIAL ══════════════════ -->
+<div class="page" id="page-historial">
+  <div class="page-title">Historial</div>
+  <div class="page-sub">Les teves sessions registrades</div>
+  <div id="historial-content"></div>
+</div>
+
+<!-- ══════════════════ PÀGINA 3: CARRERA ══════════════════ -->
+<div class="page" id="page-carrera">
+  <div class="page-title">Estimació carrera</div>
+  <div class="page-sub">Calcula la ingesta necessària per al dia de la competició</div>
+
+  <div id="avg-info"></div>
+
+  <div class="form-section">
+    <div class="form-section-title">Paràmetres de la carrera</div>
+    <div class="form-grid">
+      <div class="field">
+        <label>Distància <span class="req">*</span></label>
+        <input id="r-dist" type="number" inputmode="decimal" placeholder="42.2"/>
+        <div class="unit">KM</div>
+      </div>
+      <div class="field">
+        <label>Ritme previst</label>
+        <input id="r-ritme" type="text" inputmode="decimal" placeholder="5:30"/>
+        <div class="unit">MIN/KM</div>
+      </div>
+      <div class="field">
+        <label>Temperatura</label>
+        <input id="r-temp" type="number" inputmode="numeric" placeholder="20"/>
+        <div class="unit">°C</div>
+      </div>
+      <div class="field">
+        <label>Humetat</label>
+        <input id="r-hum" type="number" inputmode="numeric" placeholder="60"/>
+        <div class="unit">%</div>
+      </div>
+    </div>
+  </div>
+
+  <button class="btn orange" onclick="estimarCarrera()">ESTIMAR NECESSITATS</button>
+
+  <div id="carrera-result" style="display:none; margin-top:1.2rem; animation: fadeUp 0.3s ease;">
+    <div class="estimator-card">
+      <div style="font-size:0.65rem;font-weight:700;letter-spacing:0.15em;text-transform:uppercase;color:var(--accent3);margin-bottom:0.4rem;">Estimació carrera</div>
+      <div style="font-family:var(--font-h);font-size:1rem;font-weight:800;color:var(--text)" id="cr-nom">—</div>
+
+      <div class="race-result-grid">
+        <div class="race-stat blue">
+          <div class="race-stat-val" id="cr-temps">—</div>
+          <div class="race-stat-label">Temps estimat</div>
+        </div>
+        <div class="race-stat">
+          <div class="race-stat-val" id="cr-tassa">—</div>
+          <div class="race-stat-label">Tassa ajustada (mL/h)</div>
+        </div>
+        <div class="race-stat warn">
+          <div class="race-stat-val" id="cr-total">—</div>
+          <div class="race-stat-label">Fluid total necessari</div>
+        </div>
+        <div class="race-stat orange">
+          <div class="race-stat-val" id="cr-hora">—</div>
+          <div class="race-stat-label">A beure per hora</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="info-box" id="cr-consell"></div>
+  </div>
+</div>
+
+<!-- ══════════════════ PÀGINA 4: RITME ══════════════════ -->
+<div class="page" id="page-ritme">
+  <div class="page-title">Calculadora de ritme</div>
+  <div class="page-sub">Ritme real i ajustat per ascens (×1,74 s/m)</div>
 
   <!-- DISTÀNCIA -->
-  <div class="section-label">Distància</div>
-  <div class="input-group">
-    <div class="input-row">
-      <div>
-        <div class="input-label">Kilòmetres</div>
-        <input class="input-field" id="km" type="number" inputmode="decimal" min="0" step="0.01" placeholder="0.00" />
-      </div>
-      <div class="input-unit">km</div>
+  <div class="form-section">
+    <div class="form-section-title">Distància</div>
+    <div class="field">
+      <label>Kilòmetres <span class="req">*</span></label>
+      <input id="p-km" type="number" inputmode="decimal" step="0.01" placeholder="10.0"/>
+      <div class="unit">KM</div>
     </div>
   </div>
 
   <!-- TEMPS -->
-  <div class="section-label">Temps total</div>
-  <div class="input-group">
-    <div class="time-row">
-      <div class="time-segment">
-        <div class="input-label">Hores</div>
-        <input class="input-field" id="hores" type="number" inputmode="numeric" min="0" max="99" placeholder="0" />
+  <div class="form-section">
+    <div class="form-section-title">Temps total</div>
+    <div style="display:flex;align-items:center;gap:0.3rem">
+      <div class="field" style="flex:1">
+        <label>Hores</label>
+        <input id="p-h" type="number" inputmode="numeric" min="0" max="99" placeholder="0"/>
       </div>
-      <div class="time-sep">:</div>
-      <div class="time-segment">
-        <div class="input-label">Minuts</div>
-        <input class="input-field" id="minuts" type="number" inputmode="numeric" min="0" max="59" placeholder="00" />
+      <div style="font-family:var(--font-h);font-size:1.6rem;color:var(--muted);padding-top:1.2rem">:</div>
+      <div class="field" style="flex:1">
+        <label>Minuts</label>
+        <input id="p-m" type="number" inputmode="numeric" min="0" max="59" placeholder="50"/>
       </div>
-      <div class="time-sep">:</div>
-      <div class="time-segment">
-        <div class="input-label">Segons</div>
-        <input class="input-field" id="segons" type="number" inputmode="numeric" min="0" max="59" placeholder="00" />
+      <div style="font-family:var(--font-h);font-size:1.6rem;color:var(--muted);padding-top:1.2rem">:</div>
+      <div class="field" style="flex:1">
+        <label>Segons</label>
+        <input id="p-s" type="number" inputmode="numeric" min="0" max="59" placeholder="00"/>
       </div>
     </div>
   </div>
 
   <!-- ASCENS TOGGLE -->
-  <div class="toggle-row" id="toggleRow" onclick="toggleAscent()">
-    <span class="toggle-label-text">Afegir ascens <span class="badge">Ritme ajustat</span></span>
-    <div class="toggle" id="toggleBtn"></div>
+  <div class="toggle-row" onclick="toggleAscens()">
+    <span class="toggle-label">Afegir ascens D+ <span style="font-size:0.6rem;background:var(--accent2);color:#0d1117;padding:0.15rem 0.4rem;border-radius:3px;margin-left:0.4rem;font-weight:700">AJUSTAT</span></span>
+    <div class="toggle-sw" id="ascens-toggle"></div>
   </div>
 
-  <!-- ASCENS INPUT -->
-  <div id="ascentSection" style="display:none">
-    <div class="section-label">Ascens total</div>
-    <div class="input-group">
-      <div class="input-row">
-        <div>
-          <div class="input-label">Metres ascendits</div>
-          <input class="input-field" id="ascens" type="number" inputmode="numeric" min="0" placeholder="0" />
+  <div id="ascens-section" style="display:none">
+    <div class="form-section">
+      <div class="form-section-title">Ascens</div>
+      <div class="field">
+        <label>Metres de desnivell positiu</label>
+        <input id="p-asc" type="number" inputmode="numeric" min="0" placeholder="500"/>
+        <div class="unit">M D+</div>
+      </div>
+    </div>
+  </div>
+
+  <button class="btn" onclick="calcRitme()">CALCULAR RITME</button>
+  <button class="btn secondary" onclick="resetRitme()">↺ Netejar</button>
+
+  <!-- RESULTAT RITME -->
+  <div id="ritme-result" style="display:none;margin-top:1.2rem;animation:fadeUp 0.3s ease">
+    <div class="pace-hero">
+      <div style="font-size:0.65rem;font-weight:700;letter-spacing:0.15em;text-transform:uppercase;color:var(--muted);margin-bottom:0.4rem">Ritme real</div>
+      <div class="pace-result-row">
+        <div class="pace-big" id="pr-ritme">—</div>
+        <div class="pace-unit">min/km</div>
+      </div>
+      <div class="pace-grid">
+        <div class="pace-stat blue">
+          <div class="pace-stat-val" id="pr-vel">—</div>
+          <div class="pace-stat-lbl">km/h</div>
         </div>
-        <div class="input-unit">m D+</div>
+        <div class="pace-stat">
+          <div class="pace-stat-val" id="pr-temps">—</div>
+          <div class="pace-stat-lbl">Temps total</div>
+        </div>
+      </div>
+    </div>
+
+    <div id="ritme-ajustat-block" style="display:none">
+      <div class="pace-hero" style="background:linear-gradient(135deg,#1f2a1a 0%,#1a2a1f 100%);border-color:var(--accent3)">
+        <div style="font-size:0.65rem;font-weight:700;letter-spacing:0.15em;text-transform:uppercase;color:var(--accent3);margin-bottom:0.4rem">Ritme ajustat (amb ascens)</div>
+        <div class="pace-result-row">
+          <div class="pace-big" id="pr-ritme-aj" style="color:var(--accent3)">—</div>
+          <div class="pace-unit">min/km</div>
+        </div>
+        <div class="pace-grid">
+          <div class="pace-stat green">
+            <div class="pace-stat-val" id="pr-temps-eq">—</div>
+            <div class="pace-stat-lbl">Temps equivalent pla</div>
+          </div>
+          <div class="pace-stat orange">
+            <div class="pace-stat-val" id="pr-temps-extra">—</div>
+            <div class="pace-stat-lbl">Temps descomptat</div>
+          </div>
+        </div>
+        <div style="font-size:0.68rem;color:var(--muted);font-weight:500;margin-top:0.8rem;line-height:1.6">
+          Fórmula: temps − (ascens × 1,74 s/m)
+        </div>
       </div>
     </div>
   </div>
+</div>
 
-  <button class="btn-calc" onclick="calcular()">CALCULAR</button>
-  <button class="btn-reset" onclick="resetar()">↺ Reiniciar</button>
+<!-- ══════════════════ PÀGINA 5: DADES ══════════════════ -->
+<div class="page" id="page-dades">
+  <div class="page-title">Gestió de dades</div>
+  <div class="page-sub">Exporta i importa totes les teves sessions</div>
 
-  <!-- RESULTATS -->
-  <div class="results" id="results">
-    <div class="result-card highlight">
-      <div>
-        <div class="result-label">Ritme real</div>
-        <div class="result-sub">min/km sense correcció</div>
-      </div>
-      <div>
-        <div class="result-value" id="res-ritme">—</div>
-      </div>
-    </div>
-
-    <div class="result-card" id="card-velocitat">
-      <div>
-        <div class="result-label">Velocitat mitja</div>
-      </div>
-      <div>
-        <div class="result-value" id="res-vel">—</div>
-        <div class="result-sub" style="text-align:right">km/h</div>
-      </div>
-    </div>
-
-    <div class="result-card" id="card-ajustat" style="display:none">
-      <div>
-        <div class="result-label">Temps equivalent pla</div>
-        <div class="result-sub" id="sub-temps-extra"></div>
-      </div>
-      <div>
-        <div class="result-value" id="res-temps-eq">—</div>
-      </div>
-    </div>
-
-    <div class="result-card highlight2" id="card-ritme-aj" style="display:none">
-      <div>
-        <div class="result-label">Ritme ajustat</div>
-        <div class="result-sub">amb correcció d'ascens</div>
-      </div>
-      <div>
-        <div class="result-value" id="res-ritme-aj">—</div>
-      </div>
-    </div>
+  <div class="dades-card">
+    <div class="dades-card-title">📤 Exportar dades</div>
+    <div class="dades-info">Descarrega totes les sessions guardades en format JSON. Guarda el fitxer com a còpia de seguretat o per importar-lo en un altre dispositiu.</div>
+    <button class="btn green small" onclick="exportarDades()">⬇ Descarregar JSON</button>
+    <button class="btn secondary small" onclick="exportarCSV()">⬇ Descarregar CSV</button>
   </div>
 
-  <!-- FORMULA -->
-  <div class="formula-box" id="formula-box">
-    <div class="formula-title">Com es calcula</div>
-    <div class="formula-text">
-      <strong>Ritme</strong> = Temps total ÷ Distància (min/km)<br>
-      <strong>Temps extra</strong> = Ascens (m) × 1,74 (seg)<br>
-      <strong>Temps equivalent</strong> = Temps real − Temps extra<br>
-      <strong>Ritme ajustat</strong> = Temps equivalent ÷ Distància
-    </div>
+  <div class="dades-card">
+    <div class="dades-card-title">📥 Importar dades</div>
+    <div class="dades-info">Selecciona un fitxer JSON exportat prèviament. Les sessions noves s'afegiran sense esborrar les existents.</div>
+    <input type="file" id="import-file" accept=".json" onchange="importarDades(event)"/>
+    <button class="btn small" onclick="document.getElementById('import-file').click()">⬆ Seleccionar fitxer JSON</button>
+    <div id="import-status" style="font-size:0.75rem;color:var(--accent3);font-weight:600;margin-top:0.5rem;display:none"></div>
   </div>
 
-</main>
+  <div class="dades-card">
+    <div class="dades-card-title">📊 Resum de dades</div>
+    <div id="dades-resum" style="font-size:0.82rem;color:var(--text);font-weight:500;line-height:2"></div>
+  </div>
+
+  <div class="dades-card" style="border-color:rgba(248,113,113,0.3)">
+    <div class="dades-card-title" style="color:var(--warn)">🗑 Esborrar tot</div>
+    <div class="dades-info">Elimina totes les sessions guardades. Aquesta acció no es pot desfer.</div>
+    <button class="btn red small" onclick="esborrarTot()">✕ Esborrar totes les sessions</button>
+  </div>
+</div>
 
 <script>
-  // SW registration
-  if ('serviceWorker' in navigator) {
-    window.addEventListener('load', () => {
-      navigator.serviceWorker.register('sw.js').catch(() => {});
-    });
+// ── UTILS ──
+const $ = id => document.getElementById(id);
+const fv = id => parseFloat($(id).value) || 0;
+const iv = id => parseInt($(id).value) || 0;
+
+function parsePace(str) {
+  if (!str) return 0;
+  const parts = str.split(':');
+  if (parts.length === 2) return parseFloat(parts[0]) + parseFloat(parts[1]) / 60;
+  return parseFloat(str);
+}
+
+function formatPace(minkm) {
+  const m = Math.floor(minkm);
+  const s = Math.round((minkm - m) * 60);
+  return `${m}:${String(s).padStart(2,'0')}`;
+}
+
+function formatTime(min) {
+  const h = Math.floor(min / 60);
+  const m = Math.round(min % 60);
+  if (h > 0) return `${h}h ${String(m).padStart(2,'0')}m`;
+  return `${m} min`;
+}
+
+function formatDate(ts) {
+  return new Date(ts).toLocaleDateString('ca-ES', {day:'2-digit',month:'short',year:'numeric'});
+}
+
+// ── STORAGE ──
+function getSessions() {
+  try { return JSON.parse(localStorage.getItem('sudorlab_sessions') || '[]'); } catch { return []; }
+}
+function saveSessions(arr) {
+  localStorage.setItem('sudorlab_sessions', JSON.stringify(arr));
+}
+
+// ── CÀLCUL TASSA ──
+function calcularTassa(pesBefore, pesAfter, liquidML, orinaML, duradaMin) {
+  const perdua = (pesBefore - pesAfter) * 1000 + liquidML - orinaML;
+  const tassa = (perdua / duradaMin) * 60;
+  return { perdua, tassa };
+}
+
+// Factor ambient: temperatura i humetat augmenten la sudoració
+function factorAmbient(temp, humetat) {
+  let f = 1.0;
+  if (temp > 20) f += (temp - 20) * 0.025;
+  if (humetat > 60) f += (humetat - 60) * 0.003;
+  return Math.max(0.7, Math.min(f, 2.0));
+}
+
+// ── CALCULAR ──
+function calcular() {
+  const pesBefore = fv('pes_abans');
+  const pesAfter  = fv('pes_despres');
+  const liquid    = fv('liquid');
+  const orina     = fv('orina');
+  const durada    = fv('durada');
+  const temp      = fv('temp');
+
+  if (!pesBefore || !pesAfter || !durada) {
+    alert('Cal introduir: Pes abans, Pes després i Durada.');
+    return;
+  }
+  if (pesAfter > pesBefore) {
+    alert('El pes després no pot ser major que el pes abans.');
+    return;
   }
 
-  let ascentEnabled = false;
+  const { perdua, tassa } = calcularTassa(pesBefore, pesAfter, liquid, orina, durada);
+  const pct = ((pesBefore - pesAfter) / pesBefore * 100);
+  const recomanat = Math.round(tassa * 0.8); // 80% reposició és pràctic
+  const deficit = Math.round(perdua - liquid);
 
-  function toggleAscent() {
-    ascentEnabled = !ascentEnabled;
-    document.getElementById('toggleBtn').classList.toggle('on', ascentEnabled);
-    document.getElementById('ascentSection').style.display = ascentEnabled ? 'block' : 'none';
+  $('r-tassa').textContent   = Math.round(tassa);
+  $('r-perdua').textContent  = Math.round(perdua) + ' mL';
+  $('r-pct').textContent     = pct.toFixed(1) + '%';
+  $('r-recomanat').textContent = recomanat + ' mL';
+  $('r-deficit').textContent = deficit > 0 ? '+' + deficit + ' mL' : deficit + ' mL';
+
+  // Badge hidratació
+  let badge = '';
+  if (pct < 2) badge = `<div class="hydro-badge ok">✓ Hidratació acceptable (&lt;2%)</div>`;
+  else if (pct < 3) badge = `<div class="hydro-badge mid">⚠ Deshidratació lleu (${pct.toFixed(1)}%)</div>`;
+  else badge = `<div class="hydro-badge bad">✗ Deshidratació significativa (${pct.toFixed(1)}%)</div>`;
+  $('r-badge').innerHTML = badge;
+
+  $('resultat').classList.add('show');
+  $('resultat').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+
+  // Desar temporalment per botó guardar
+  window._currentSession = {
+    ts: Date.now(),
+    pesBefore, pesAfter, liquid, orina, durada,
+    ritme: $('ritme').value,
+    fc: iv('fc'), calories: iv('calories'),
+    temp, humetat: fv('humetat'),
+    tassa: Math.round(tassa),
+    perdua: Math.round(perdua),
+    pct: parseFloat(pct.toFixed(1))
+  };
+}
+
+function guardar() {
+  if (!window._currentSession) return;
+  const sessions = getSessions();
+  sessions.unshift(window._currentSession);
+  saveSessions(sessions);
+  window._currentSession = null;
+  alert('Sessió guardada!');
+  resetar();
+}
+
+function resetar() {
+  ['pes_abans','pes_despres','liquid','orina','durada','ritme','fc','calories','temp','humetat']
+    .forEach(id => $(id).value = '');
+  $('resultat').classList.remove('show');
+}
+
+// ── HISTORIAL ──
+function renderHistorial() {
+  const sessions = getSessions();
+  const el = $('historial-content');
+  if (!sessions.length) {
+    el.innerHTML = `<div class="history-empty"><div class="icon">📊</div>Encara no hi ha sessions registrades.<br>Comença a registrar a la pestanya <strong>Registre</strong>.</div>`;
+    return;
   }
 
-  function minToStr(totalMin) {
-    const m = Math.floor(totalMin);
-    const s = Math.round((totalMin - m) * 60);
-    return `${m}'${String(s).padStart(2,'0')}"`;
+  const avg = Math.round(sessions.reduce((s,x) => s + x.tassa, 0) / sessions.length);
+
+  el.innerHTML = `
+    <div class="avg-banner">
+      <div>
+        <div class="avg-banner-label">Tassa mitjana</div>
+        <div style="font-size:0.65rem;color:var(--muted);font-weight:600">${sessions.length} sessions</div>
+      </div>
+      <div class="avg-banner-val">${avg} <span style="font-family:var(--font-b);font-size:0.75rem;font-weight:600;color:var(--muted)">mL/h</span></div>
+    </div>
+    ${sessions.map((s, i) => `
+      <div class="session-card">
+        <button class="delete-btn" onclick="eliminarSessio(${i}, event)">✕</button>
+        <div class="session-card-header">
+          <div>
+            <div class="session-date">${formatDate(s.ts)}</div>
+            <div style="font-size:0.65rem;color:var(--muted);font-weight:600;margin-top:0.15rem">${s.temp}°C · ${s.humetat || '—'}% HR · ${s.durada} min</div>
+          </div>
+          <div style="text-align:right">
+            <div class="session-rate">${s.tassa}<span> mL/h</span></div>
+            <div style="font-size:0.65rem;color:${s.pct < 2 ? 'var(--accent3)' : s.pct < 3 ? 'var(--accent2)' : 'var(--warn)'};font-weight:700">${s.pct}% pes perdut</div>
+          </div>
+        </div>
+        <div class="session-chips">
+          <div class="chip">📉 ${s.perdua} mL perduts</div>
+          ${s.ritme ? `<div class="chip">🏃 ${s.ritme} min/km</div>` : ''}
+          ${s.fc ? `<div class="chip ${s.fc > 160 ? 'hi' : ''}">❤️ ${s.fc} ppm</div>` : ''}
+          ${s.calories ? `<div class="chip">🔥 ${s.calories} kcal</div>` : ''}
+        </div>
+      </div>
+    `).join('')}
+  `;
+}
+
+function eliminarSessio(i, e) {
+  e.stopPropagation();
+  if (!confirm('Eliminar aquesta sessió?')) return;
+  const sessions = getSessions();
+  sessions.splice(i, 1);
+  saveSessions(sessions);
+  renderHistorial();
+}
+
+// ── ESTIMACIÓ CARRERA ──
+function getAvgTassa() {
+  const sessions = getSessions();
+  if (!sessions.length) return null;
+  return sessions.reduce((s,x) => s + x.tassa, 0) / sessions.length;
+}
+
+function renderAvgInfo() {
+  const avg = getAvgTassa();
+  const el = $('avg-info');
+  if (!avg) {
+    el.innerHTML = `<div class="info-box" style="margin-bottom:1rem">⚠ <strong>Sense historial</strong> — afegeix sessions per obtenir estimacions personalitzades. S'usarà una tassa de referència de 800 mL/h.</div>`;
+  } else {
+    el.innerHTML = `<div class="avg-banner" style="margin-bottom:1rem"><div><div class="avg-banner-label">Tassa base (historial teu)</div><div style="font-size:0.65rem;color:var(--muted);font-weight:600">${getSessions().length} sessions</div></div><div class="avg-banner-val">${Math.round(avg)} <span style="font-family:var(--font-b);font-size:0.75rem;font-weight:600;color:var(--muted)">mL/h</span></div></div>`;
+  }
+}
+
+function estimarCarrera() {
+  const dist = fv('r-dist');
+  const ritme = parsePace($('r-ritme').value) || 6;
+  const temp = fv('r-temp') || 20;
+  const hum = fv('r-hum') || 60;
+
+  if (!dist) { alert('Introdueix la distància de la carrera.'); return; }
+
+  const baseTassa = getAvgTassa() || 800;
+  const fa = factorAmbient(temp, hum);
+  const tassaAjustada = Math.round(baseTassa * fa);
+
+  const tempsMin = dist * ritme;
+  const tempsH = tempsMin / 60;
+  const totalFluid = Math.round(tassaAjustada * tempsH);
+  const fluidHora = tassaAjustada;
+  const fluidPer15 = Math.round(fluidHora / 4);
+
+  // Nom carrera
+  let nomCarrera = dist < 5 ? 'Cursa curta' : dist < 15 ? 'Cursa 10K–15K' : dist < 25 ? 'Mitja marató' : dist < 45 ? 'Marató' : dist < 80 ? 'Ultra curta' : 'Ultra trail';
+
+  $('cr-nom').textContent = `${nomCarrera} · ${dist} km`;
+  $('cr-temps').textContent = formatTime(tempsMin);
+  $('cr-tassa').textContent = tassaAjustada + ' mL/h';
+  $('cr-total').textContent = totalFluid + ' mL';
+  $('cr-hora').textContent = fluidHora + ' mL/h';
+
+  let consell = `<strong>Pla d'hidratació:</strong><br>`;
+  consell += `· Beure aprox. <strong>${fluidPer15} mL cada 15 min</strong> (${fluidHora} mL/h).<br>`;
+  consell += `· Factor ambient aplicat: ×${fa.toFixed(2)} (${temp}°C, ${hum || '—'}% HR).<br>`;
+  if (fa > 1.3) consell += `· ⚠ Condicions càlides/humides: augmenta la freqüència de hidratació.<br>`;
+  if (dist > 30) consell += `· Per ultratrails considera sals minerals cada 45–60 min.<br>`;
+  consell += `· Comença la carrera ben hidratat (orina clara).`;
+
+  $('cr-consell').innerHTML = consell;
+  $('carrera-result').style.display = 'block';
+  $('carrera-result').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+
+// ── NAVEGACIÓ ──
+function goTo(page, btn) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+  $('page-' + page).classList.add('active');
+  if (btn) btn.classList.add('active');
+  if (page === 'historial') renderHistorial();
+  if (page === 'carrera') renderAvgInfo();
+  if (page === 'dades') renderDadesResum();
+}
+
+// ── RITME ──
+let ascensActiu = false;
+
+function toggleAscens() {
+  ascensActiu = !ascensActiu;
+  $('ascens-toggle').classList.toggle('on', ascensActiu);
+  $('ascens-section').style.display = ascensActiu ? 'block' : 'none';
+}
+
+function minToStr(totalMin) {
+  const m = Math.floor(totalMin);
+  const s = Math.round((totalMin - m) * 60);
+  return `${m}'${String(s).padStart(2,'0')}"`;
+}
+
+function secsToHMS(secs) {
+  const h = Math.floor(secs / 3600);
+  const m = Math.floor((secs % 3600) / 60);
+  const s = Math.round(secs % 60);
+  if (h > 0) return `${h}h ${String(m).padStart(2,'0')}m`;
+  return `${m}m ${String(s).padStart(2,'0')}s`;
+}
+
+function calcRitme() {
+  const km  = parseFloat($('p-km').value) || 0;
+  const h   = parseInt($('p-h').value) || 0;
+  const m   = parseInt($('p-m').value) || 0;
+  const s   = parseInt($('p-s').value) || 0;
+  const asc = parseInt($('p-asc').value) || 0;
+
+  if (km <= 0 || (h + m + s) === 0) {
+    alert('Cal introduir distància i temps.');
+    return;
   }
 
-  function secsToHMS(secs) {
-    const h = Math.floor(secs / 3600);
-    const m = Math.floor((secs % 3600) / 60);
-    const s = Math.round(secs % 60);
-    if (h > 0) return `${h}h ${String(m).padStart(2,'0')}m ${String(s).padStart(2,'0')}s`;
-    return `${m}m ${String(s).padStart(2,'0')}s`;
+  const totalSecs = h * 3600 + m * 60 + s;
+  const totalMin  = totalSecs / 60;
+  const ritme     = totalMin / km;
+  const vel       = km / (totalMin / 60);
+
+  $('pr-ritme').textContent = minToStr(ritme);
+  $('pr-vel').textContent   = vel.toFixed(2);
+  $('pr-temps').textContent = secsToHMS(totalSecs);
+
+  if (ascensActiu && asc > 0) {
+    const extraSecs  = asc * 1.74;
+    const equivSecs  = Math.max(0, totalSecs - extraSecs);
+    const ritmeAj    = (equivSecs / 60) / km;
+
+    $('pr-ritme-aj').textContent  = minToStr(ritmeAj);
+    $('pr-temps-eq').textContent  = secsToHMS(equivSecs);
+    $('pr-temps-extra').textContent = '−' + secsToHMS(extraSecs);
+    $('ritme-ajustat-block').style.display = 'block';
+  } else {
+    $('ritme-ajustat-block').style.display = 'none';
   }
 
-  function calcular() {
-    const km = parseFloat(document.getElementById('km').value) || 0;
-    const h  = parseInt(document.getElementById('hores').value) || 0;
-    const m  = parseInt(document.getElementById('minuts').value) || 0;
-    const s  = parseInt(document.getElementById('segons').value) || 0;
-    const asc = parseInt(document.getElementById('ascens').value) || 0;
+  $('ritme-result').style.display = 'block';
+  $('ritme-result').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
 
-    if (km <= 0 || (h + m + s) === 0) {
-      alert('Cal introduir una distància i un temps vàlids.');
-      return;
+function resetRitme() {
+  ['p-km','p-h','p-m','p-s','p-asc'].forEach(id => $(id).value = '');
+  $('ritme-result').style.display = 'none';
+  if (ascensActiu) toggleAscens();
+}
+
+// ── DADES ──
+function renderDadesResum() {
+  const sessions = getSessions();
+  const el = $('dades-resum');
+  if (!sessions.length) {
+    el.innerHTML = '<span style="color:var(--muted)">No hi ha sessions guardades.</span>';
+    return;
+  }
+  const avg = Math.round(sessions.reduce((s,x) => s + x.tassa, 0) / sessions.length);
+  const minDate = new Date(Math.min(...sessions.map(s=>s.ts))).toLocaleDateString('ca-ES');
+  const maxDate = new Date(Math.max(...sessions.map(s=>s.ts))).toLocaleDateString('ca-ES');
+  el.innerHTML = `
+    📋 <strong>${sessions.length}</strong> sessions guardades<br>
+    📅 Del <strong>${minDate}</strong> al <strong>${maxDate}</strong><br>
+    💧 Tassa mitjana: <strong>${avg} mL/h</strong><br>
+    💾 Espai usat: <strong>~${(JSON.stringify(sessions).length / 1024).toFixed(1)} KB</strong>
+  `;
+}
+
+function exportarDades() {
+  const sessions = getSessions();
+  if (!sessions.length) { alert('No hi ha dades per exportar.'); return; }
+  const blob = new Blob([JSON.stringify({ versio: 1, exportat: new Date().toISOString(), sessions }, null, 2)], { type: 'application/json' });
+  const url  = URL.createObjectURL(blob);
+  const a    = document.createElement('a');
+  a.href = url;
+  a.download = `sudorlab_${new Date().toISOString().slice(0,10)}.json`;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+function exportarCSV() {
+  const sessions = getSessions();
+  if (!sessions.length) { alert('No hi ha dades per exportar.'); return; }
+  const caps = ['Data','Tassa mL/h','Pes Abans','Pes Despres','Liquid mL','Orina mL','Durada min','Ritme','FC','Calories','Temp','Humetat','Perdua mL','Pct Pes'];
+  const rows = sessions.map(s => [
+    new Date(s.ts).toLocaleDateString('ca-ES'),
+    s.tassa, s.pesBefore, s.pesAfter, s.liquid, s.orina,
+    s.durada, s.ritme || '', s.fc || '', s.calories || '',
+    s.temp, s.humetat || '', s.perdua, s.pct
+  ].join(','));
+  const csv  = [caps.join(','), ...rows].join('\n');
+  const blob = new Blob([csv], { type: 'text/csv' });
+  const url  = URL.createObjectURL(blob);
+  const a    = document.createElement('a');
+  a.href = url;
+  a.download = `sudorlab_${new Date().toISOString().slice(0,10)}.csv`;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+function importarDades(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    try {
+      const data = JSON.parse(e.target.result);
+      const noves = data.sessions || (Array.isArray(data) ? data : []);
+      if (!noves.length) throw new Error('Cap sessió trobada');
+      const existents = getSessions();
+      const tsExistents = new Set(existents.map(s => s.ts));
+      const afegides = noves.filter(s => !tsExistents.has(s.ts));
+      saveSessions([...afegides, ...existents]);
+      const st = $('import-status');
+      st.textContent = `✓ ${afegides.length} sessions importades (${noves.length - afegides.length} duplicades ignorades)`;
+      st.style.display = 'block';
+      renderDadesResum();
+      event.target.value = '';
+    } catch(err) {
+      alert('Error llegint el fitxer: ' + err.message);
     }
+  };
+  reader.readAsText(file);
+}
 
-    const totalSecs = h * 3600 + m * 60 + s;
-    const totalMin  = totalSecs / 60;
+function esborrarTot() {
+  const sessions = getSessions();
+  if (!sessions.length) { alert('No hi ha dades.'); return; }
+  if (!confirm(`Segur que vols eliminar les ${sessions.length} sessions? Aquesta acció no es pot desfer.`)) return;
+  localStorage.removeItem('sudorlab_sessions');
+  renderDadesResum();
+  alert('Totes les sessions han estat eliminades.');
+}
 
-    const ritme = totalMin / km; // min/km
-    const vel   = km / (totalMin / 60); // km/h
-
-    document.getElementById('res-ritme').textContent = minToStr(ritme);
-    document.getElementById('res-vel').textContent   = vel.toFixed(2);
-
-    if (ascentEnabled && asc > 0) {
-      const tempsExtraSecs = asc * 1.74;
-      const totalEquivSecs = Math.max(0, totalSecs - tempsExtraSecs);
-      const ritmeAj = (totalEquivSecs / 60) / km;
-
-      document.getElementById('sub-temps-extra').textContent =
-        `-${secsToHMS(tempsExtraSecs)} per ${asc}m D+`;
-      document.getElementById('res-temps-eq').textContent = secsToHMS(totalEquivSecs);
-      document.getElementById('res-ritme-aj').textContent = minToStr(ritmeAj);
-
-      document.getElementById('card-ajustat').style.display = 'flex';
-      document.getElementById('card-ritme-aj').style.display = 'flex';
-    } else {
-      document.getElementById('card-ajustat').style.display = 'none';
-      document.getElementById('card-ritme-aj').style.display = 'none';
-    }
-
-    const results = document.getElementById('results');
-    results.classList.add('visible');
-    results.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-  }
-
-  function resetar() {
-    ['km','hores','minuts','segons','ascens'].forEach(id => {
-      document.getElementById(id).value = '';
-    });
-    document.getElementById('results').classList.remove('visible');
-    if (ascentEnabled) toggleAscent();
-  }
-
-  // Enter key
-  document.addEventListener('keydown', e => {
-    if (e.key === 'Enter') calcular();
-  });
+// SW
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('sw.js').catch(() => {});
+}
 </script>
 </body>
 </html>
