@@ -1636,14 +1636,39 @@ function importarDades(event) {
   reader.onload = e => {
     try {
       const data = JSON.parse(e.target.result);
-      const noves = data.sessions || (Array.isArray(data) ? data : []);
-      if (!noves.length) throw new Error('Cap sessió trobada');
-      const existents = getSessions();
-      const tsExistents = new Set(existents.map(s => s.ts));
-      const afegides = noves.filter(s => !tsExistents.has(s.ts));
-      saveSessions([...afegides, ...existents]);
+
+      // ── Sessions de sudoració ──
+      const novesSessions = data.sessions || (Array.isArray(data) ? data : []);
+      const existentsSessions = getSessions();
+      const tsExistents = new Set(existentsSessions.map(s => s.ts));
+      const afegidesSessions = novesSessions.filter(s => !tsExistents.has(s.ts));
+      if (afegidesSessions.length) saveSessions([...afegidesSessions, ...existentsSessions]);
+
+      // ── Sabates ──
+      let afegidesSabates = 0;
+      if (data.sudorlab_sabates && Array.isArray(data.sudorlab_sabates)) {
+        const existents = getSabates();
+        const noves = data.sudorlab_sabates.filter(s => !existents.includes(s));
+        if (noves.length) { saveSabates([...existents, ...noves]); afegidesSabates = noves.length; }
+      }
+
+      // ── Mesures de sabates ──
+      let afegidesMesures = 0;
+      if (data.sudorlab_mesures && Array.isArray(data.sudorlab_mesures)) {
+        const existents = getMesures();
+        const tsEx = new Set(existents.map(m => m.ts));
+        const noves = data.sudorlab_mesures.filter(m => !tsEx.has(m.ts));
+        if (noves.length) { saveMesures([...noves, ...existents]); afegidesMesures = noves.length; }
+      }
+
       const st = $('import-status');
-      st.textContent = `✓ ${afegides.length} sessions importades (${noves.length - afegides.length} duplicades ignorades)`;
+      const parts = [];
+      if (afegidesSessions.length) parts.push(`${afegidesSessions.length} sessions`);
+      if (afegidesSabates) parts.push(`${afegidesSabates} sabates`);
+      if (afegidesMesures) parts.push(`${afegidesMesures} mesures`);
+      st.textContent = parts.length
+        ? `✓ Importat: ${parts.join(', ')}`
+        : '⚠ Cap dada nova (tot ja existia)';
       st.style.display = 'block';
       renderDadesResum();
       event.target.value = '';
