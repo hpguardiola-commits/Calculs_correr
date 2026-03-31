@@ -604,6 +604,27 @@
       margin-bottom: 0.5rem;
     }
     #import-file { display: none; }
+
+  .hist-btn {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    color: var(--muted);
+    font-family: var(--font-b);
+    font-size: 0.65rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    padding: 0.35rem 0.8rem;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: all 0.15s;
+  }
+  .hist-btn:hover { color: var(--text); border-color: var(--text); }
+  .hist-btn-on {
+    background: var(--surface2);
+    border-color: var(--accent);
+    color: var(--accent);
+  }
   </style>
 </head>
 <body>
@@ -671,25 +692,30 @@
         <div style="display:flex;align-items:center;gap:0.3rem">
           <div style="flex:1;display:flex;flex-direction:column">
             <span style="font-size:0.58rem;color:var(--muted);font-weight:700;letter-spacing:0.1em;text-transform:uppercase;margin-bottom:0.2rem">H</span>
-            <input id="p-h" type="number" inputmode="numeric" min="0" max="99" placeholder="0" style="text-align:center"/>
+            <input id="p-h" type="number" inputmode="numeric" min="0" max="99" placeholder="0" style="text-align:center" oninput="autoCalc('temps')"/>
           </div>
           <div style="font-family:var(--font-h);font-size:1.4rem;color:var(--muted);padding-top:0.8rem">:</div>
           <div style="flex:1;display:flex;flex-direction:column">
             <span style="font-size:0.58rem;color:var(--muted);font-weight:700;letter-spacing:0.1em;text-transform:uppercase;margin-bottom:0.2rem">MIN</span>
-            <input id="p-m" type="number" inputmode="numeric" min="0" max="59" placeholder="55" style="text-align:center"/>
+            <input id="p-m" type="number" inputmode="numeric" min="0" max="59" placeholder="55" style="text-align:center" oninput="autoCalc('temps')"/>
           </div>
           <div style="font-family:var(--font-h);font-size:1.4rem;color:var(--muted);padding-top:0.8rem">:</div>
           <div style="flex:1;display:flex;flex-direction:column">
             <span style="font-size:0.58rem;color:var(--muted);font-weight:700;letter-spacing:0.1em;text-transform:uppercase;margin-bottom:0.2rem">SEG</span>
-            <input id="p-s" type="number" inputmode="numeric" min="0" max="59" placeholder="00" style="text-align:center"/>
+            <input id="p-s" type="number" inputmode="numeric" min="0" max="59" placeholder="00" style="text-align:center" oninput="autoCalc('temps')"/>
           </div>
         </div>
       </div>
     </div>
     <div class="form-grid">
       <div class="field">
+        <label>Distància</label>
+        <input id="p-km" type="number" inputmode="decimal" step="0.01" placeholder="10.0" oninput="autoCalc('dist')"/>
+        <div class="unit">KM</div>
+      </div>
+      <div class="field">
         <label>Ritme</label>
-        <input id="ritme" type="text" inputmode="numeric" placeholder="5:30" maxlength="5" oninput="autoColon(this)"/>
+        <input id="ritme" type="text" inputmode="numeric" placeholder="5:30" maxlength="5" oninput="autoColon(this); autoCalc('ritme')"/>
         <div class="unit">MIN/KM</div>
       </div>
       <div class="field">
@@ -703,6 +729,7 @@
         <div class="unit">KCAL</div>
       </div>
     </div>
+    <div id="autocalc-hint-sudor" style="font-size:0.65rem;color:var(--accent3);font-weight:600;margin-top:0.4rem;display:none">⚡ Camp calculat automàticament</div>
   </div>
 
   <!-- AMBIENT -->
@@ -783,7 +810,7 @@
       </div>
       <div class="field">
         <label>Ritme previst</label>
-        <input id="r-ritme" type="text" inputmode="numeric" placeholder="5:30" maxlength="5" oninput="autoColon(this)"/>
+        <input id="r-ritme" type="text" inputmode="numeric" placeholder="5:30" maxlength="5" oninput="autoColon(this); autoCalc('ritme')"/>
         <div class="unit">MIN/KM</div>
       </div>
       <div class="field">
@@ -839,8 +866,8 @@
   <div class="form-section">
     <div class="form-section-title">Distància</div>
     <div class="field">
-      <label>Kilòmetres <span class="req">*</span></label>
-      <input id="p-km" type="number" inputmode="decimal" step="0.01" placeholder="10.0"/>
+      <label>Kilòmetres</label>
+      <input id="p-km" type="number" inputmode="decimal" step="0.01" placeholder="10.0" oninput="autoCalc('dist')"/>
       <div class="unit">KM</div>
     </div>
   </div>
@@ -851,23 +878,32 @@
     <div style="display:flex;align-items:center;gap:0.3rem">
       <div style="flex:1;display:flex;flex-direction:column">
         <span style="font-size:0.58rem;color:var(--muted);font-weight:700;letter-spacing:0.1em;text-transform:uppercase;margin-bottom:0.2rem">H</span>
-        <input id="p-h" type="number" inputmode="numeric" min="0" max="99" placeholder="0" style="text-align:center;background:var(--bg2);border:1px solid var(--border);border-radius:6px;color:var(--text);font-family:var(--font-b);font-size:1rem;font-weight:600;padding:0.6rem 0.4rem;outline:none;width:100%"/>
+        <input id="p-h" type="number" inputmode="numeric" min="0" max="99" placeholder="0" style="text-align:center;background:var(--bg2);border:1px solid var(--border);border-radius:6px;color:var(--text);font-family:var(--font-b);font-size:1rem;font-weight:600;padding:0.6rem 0.4rem;outline:none;width:100%" oninput="autoCalc('temps')"/>
       </div>
       <div style="font-family:var(--font-h);font-size:1.6rem;color:var(--muted);padding-top:0.8rem">:</div>
       <div style="flex:1;display:flex;flex-direction:column">
         <span style="font-size:0.58rem;color:var(--muted);font-weight:700;letter-spacing:0.1em;text-transform:uppercase;margin-bottom:0.2rem">MIN</span>
-        <input id="p-m" type="number" inputmode="numeric" min="0" max="59" placeholder="50" style="text-align:center;background:var(--bg2);border:1px solid var(--border);border-radius:6px;color:var(--text);font-family:var(--font-b);font-size:1rem;font-weight:600;padding:0.6rem 0.4rem;outline:none;width:100%"/>
+        <input id="p-m" type="number" inputmode="numeric" min="0" max="59" placeholder="50" style="text-align:center;background:var(--bg2);border:1px solid var(--border);border-radius:6px;color:var(--text);font-family:var(--font-b);font-size:1rem;font-weight:600;padding:0.6rem 0.4rem;outline:none;width:100%" oninput="autoCalc('temps')"/>
       </div>
       <div style="font-family:var(--font-h);font-size:1.6rem;color:var(--muted);padding-top:0.8rem">:</div>
       <div style="flex:1;display:flex;flex-direction:column">
         <span style="font-size:0.58rem;color:var(--muted);font-weight:700;letter-spacing:0.1em;text-transform:uppercase;margin-bottom:0.2rem">SEG</span>
-        <input id="p-s" type="number" inputmode="numeric" min="0" max="59" placeholder="00" style="text-align:center;background:var(--bg2);border:1px solid var(--border);border-radius:6px;color:var(--text);font-family:var(--font-b);font-size:1rem;font-weight:600;padding:0.6rem 0.4rem;outline:none;width:100%"/>
+        <input id="p-s" type="number" inputmode="numeric" min="0" max="59" placeholder="00" style="text-align:center;background:var(--bg2);border:1px solid var(--border);border-radius:6px;color:var(--text);font-family:var(--font-b);font-size:1rem;font-weight:600;padding:0.6rem 0.4rem;outline:none;width:100%" oninput="autoCalc('temps')"/>
       </div>
     </div>
     <div style="font-size:0.65rem;color:var(--muted);font-weight:500;margin-top:0.5rem">⚡ Sincronitzat amb el camp "Temps total" de Sudor</div>
   </div>
 
-  <!-- ASCENS TOGGLE -->
+  <!-- RITME (calculat o introduït) -->
+  <div class="form-section">
+    <div class="form-section-title">Ritme</div>
+    <div class="field">
+      <label>Min/km (introdueix o es calcula sol)</label>
+      <input id="ritme" type="text" inputmode="numeric" placeholder="5:30" maxlength="5" oninput="autoColon(this); autoCalc('ritme')"/>
+      <div class="unit">MIN/KM</div>
+    </div>
+    <div id="autocalc-hint" style="font-size:0.65rem;color:var(--accent3);font-weight:600;margin-top:0.4rem;display:none">⚡ Camp calculat automàticament</div>
+  </div>
   <div class="toggle-row" onclick="toggleAscens()">
     <span class="toggle-label">Afegir ascens D+ <span style="font-size:0.6rem;background:var(--accent2);color:#0d1117;padding:0.15rem 0.4rem;border-radius:3px;margin-left:0.4rem;font-weight:700">AJUSTAT</span></span>
     <div class="toggle-sw" id="ascens-toggle"></div>
@@ -1073,51 +1109,151 @@ const $ = id => document.getElementById(id);
 const fv = id => parseFloat($(id).value) || 0;
 const iv = id => parseInt($(id).value) || 0;
 
-// ── CAMPS COMPARTITS (distància, ritme, temps) ──
-// Mapa: id_camp → clau_storage
-const SHARED_FIELDS = {
-  // Ritme (sudor ↔ carrera ↔ sabates)
-  'ritme':     'shared_ritme',
-  'r-ritme':   'shared_ritme',
-  'sab-ritme': 'shared_ritme',
-  // Distància (carrera ↔ ritme)
-  'r-dist':    'shared_dist',
-  'p-km':      'shared_dist',
-  // Temps (ritme pàgina)
-  'p-h':       'shared_h',
-  'p-m':       'shared_m',
-  'p-s':       'shared_s',
-  // Temperatura (sudor ↔ carrera)
-  'temp':      'shared_temp',
-  'r-temp':    'shared_temp',
-  // Humetat (sudor ↔ carrera)
-  'humetat':   'shared_hum',
-  'r-hum':     'shared_hum',
+// ── CAMPS COMPARTITS I CÀLCUL AUTOMÀTIC ──
+// Els 3 camps: distància (p-km, r-dist), temps (p-h/p-m/p-s), ritme (ritme, r-ritme)
+// Qualsevol 2 d'ells calcula el 3r automàticament i sincronitza totes les pàgines.
+
+// Grups d'IDs per a cada variable lògica
+const IDS = {
+  dist:  ['p-km', 'r-dist'],
+  ritme: ['ritme', 'r-ritme'],
+  // temps: llegim sempre de p-h/p-m/p-s (únics)
 };
 
+// Llegir valors actuals
+function getDist()  { return parseFloat($('p-km')?.value || $('r-dist')?.value) || 0; }
+function getTempsSecs() {
+  const h = parseInt($('p-h')?.value) || 0;
+  const m = parseInt($('p-m')?.value) || 0;
+  const s = parseInt($('p-s')?.value) || 0;
+  return h*3600 + m*60 + s;
+}
+function getRitmeMin() { return parsePace($('ritme')?.value || $('r-ritme')?.value || ''); }
+
+// Escriure temps als camps h:m:s
+function setTemps(totalSecs) {
+  if (totalSecs <= 0) return;
+  const h = Math.floor(totalSecs / 3600);
+  const m = Math.floor((totalSecs % 3600) / 60);
+  const s = Math.round(totalSecs % 60);
+  ['p-h'].forEach(id => { if ($(id)) $(id).value = h || ''; });
+  ['p-m'].forEach(id => { if ($(id)) $(id).value = m || ''; });
+  ['p-s'].forEach(id => { if ($(id)) $(id).value = s || ''; });
+}
+
+// Escriure distància a tots els camps dist
+function setDist(km) {
+  if (km <= 0) return;
+  IDS.dist.forEach(id => { if ($(id)) $(id).value = Math.round(km*100)/100; });
+}
+
+// Escriure ritme a tots els camps ritme
+function setRitme(minPerKm) {
+  if (minPerKm <= 0) return;
+  const str = formatPace(minPerKm);
+  IDS.ritme.forEach(id => { if ($(id)) $(id).value = str; });
+}
+
+// Motor principal: donat quin camp ha canviat, calcula el 3r
+let _autoCalcLock = false;
+function autoCalc(changed) {
+  if (_autoCalcLock) return;
+  _autoCalcLock = true;
+
+  const dist  = getDist();
+  const secs  = getTempsSecs();
+  const ritme = getRitmeMin();
+
+  // Mostra hint si es calcula alguna cosa
+  const showHint = (id) => {
+    const el = $(id);
+    if (el) { el.style.display = 'block'; setTimeout(() => el.style.display = 'none', 2500); }
+  };
+
+  if (changed === 'dist' && dist > 0) {
+    if (secs > 0 && ritme <= 0) {
+      // dist + temps → ritme
+      const r = (secs / 60) / dist;
+      setRitme(r);
+      showHint('autocalc-hint');
+    } else if (ritme > 0 && secs <= 0) {
+      // dist + ritme → temps
+      setTemps(dist * ritme * 60);
+      showHint('autocalc-hint');
+    }
+    // Sincronitza als altres camps dist
+    IDS.dist.forEach(id => { if ($(id) && parseFloat($(id).value) !== dist) $(id).value = dist; });
+  }
+
+  if (changed === 'temps' && secs > 0) {
+    if (dist > 0 && ritme <= 0) {
+      // temps + dist → ritme
+      const r = (secs / 60) / dist;
+      setRitme(r);
+      showHint('autocalc-hint');
+    } else if (ritme > 0 && dist <= 0) {
+      // temps + ritme → dist
+      const d = (secs / 60) / ritme;
+      setDist(d);
+      showHint('autocalc-hint');
+    }
+  }
+
+  if (changed === 'ritme' && ritme > 0) {
+    if (dist > 0 && secs <= 0) {
+      // ritme + dist → temps
+      setTemps(dist * ritme * 60);
+      showHint('autocalc-hint');
+    } else if (secs > 0 && dist <= 0) {
+      // ritme + temps → dist
+      const d = (secs / 60) / ritme;
+      setDist(d);
+      showHint('autocalc-hint');
+    }
+    // Sincronitza als altres camps ritme
+    const str = formatPace(ritme);
+    IDS.ritme.forEach(id => { if ($(id) && $(id).value !== str) $(id).value = str; });
+  }
+
+  // Guarda a localStorage per sincronitzar entre pàgines
+  if (dist > 0)  localStorage.setItem('shared_dist', dist);
+  if (secs > 0)  { localStorage.setItem('shared_h', Math.floor(secs/3600)); localStorage.setItem('shared_m', Math.floor((secs%3600)/60)); localStorage.setItem('shared_s', secs%60); }
+  if (ritme > 0) localStorage.setItem('shared_ritme', formatPace(ritme));
+
+  _autoCalcLock = false;
+}
+
+// Sincronitza camps en carregar/canviar pàgina
+function syncSharedFields() {
+  const dist  = localStorage.getItem('shared_dist');
+  const h     = localStorage.getItem('shared_h');
+  const m2    = localStorage.getItem('shared_m');
+  const s2    = localStorage.getItem('shared_s');
+  const ritme = localStorage.getItem('shared_ritme');
+  const temp  = localStorage.getItem('shared_temp');
+  const hum   = localStorage.getItem('shared_hum');
+
+  if (dist)  IDS.dist.forEach(id  => { if ($(id) && !$(id).value) $(id).value = dist; });
+  if (h)     { if ($('p-h') && !$('p-h').value) $('p-h').value = h; }
+  if (m2)    { if ($('p-m') && !$('p-m').value) $('p-m').value = m2; }
+  if (s2)    { if ($('p-s') && !$('p-s').value) $('p-s').value = s2; }
+  if (ritme) IDS.ritme.forEach(id => { if ($(id) && !$(id).value) $(id).value = ritme; });
+  if (temp)  ['temp','r-temp'].forEach(id => { if ($(id) && !$(id).value) $(id).value = temp; });
+  if (hum)   ['humetat','r-hum'].forEach(id => { if ($(id) && !$(id).value) $(id).value = hum; });
+}
+
 function saveShared(id, val) {
-  const key = SHARED_FIELDS[id];
+  const map = {'temp':'shared_temp','r-temp':'shared_temp','humetat':'shared_hum','r-hum':'shared_hum'};
+  const key = map[id];
   if (key && val !== '') localStorage.setItem(key, val);
 }
 
-function loadShared(id) {
-  const key = SHARED_FIELDS[id];
-  if (!key) return;
-  const val = localStorage.getItem(key);
-  if (val !== null && $(id) && $(id).value === '') $(id).value = val;
-}
-
-function syncSharedFields() {
-  Object.keys(SHARED_FIELDS).forEach(id => loadShared(id));
-}
-
-// Escolta canvis en camps compartits i desa
 function initSharedListeners() {
-  Object.keys(SHARED_FIELDS).forEach(id => {
+  // Temperatura i humetat (no formen part del trinomi dist/temps/ritme)
+  ['temp','r-temp','humetat','r-hum'].forEach(id => {
     const el = $(id);
     if (!el) return;
     el.addEventListener('input', () => saveShared(id, el.value));
-    el.addEventListener('change', () => saveShared(id, el.value));
   });
 }
 
@@ -1185,14 +1321,8 @@ function calcular() {
   const orina     = fv('orina');
   const temp      = fv('temp');
 
-  // Temps compartit h:m:s
-  const h = parseInt($('p-h').value) || 0;
-  const m = parseInt($('p-m').value) || 0;
-  const s = parseInt($('p-s').value) || 0;
-  const durada = (h * 3600 + m * 60 + s) / 60; // en minuts
-
-  if (!pesBefore || !pesAfter || durada <= 0) {
-    alert('Cal introduir: Pes abans, Pes després i Temps total.');
+  if (!pesBefore || !pesAfter) {
+    alert('Cal introduir: Pes abans i Pes després.');
     return;
   }
   if (pesAfter > pesBefore) {
@@ -1200,16 +1330,33 @@ function calcular() {
     return;
   }
 
-  const { perdua, tassa } = calcularTassa(pesBefore, pesAfter, liquid, orina, durada);
-  const pct = ((pesBefore - pesAfter) / pesBefore * 100);
-  const recomanat = Math.round(tassa * 0.8);
-  const deficit = Math.round(perdua - liquid);
+  // Deriva durada des de qualsevol 2 dels 3 camps
+  const km    = getDist();
+  const secs  = getTempsSecs();
+  const ritme = getRitmeMin();
+  const teKm  = km > 0, teSecs = secs > 0, teRitme = ritme > 0;
+  const count = (teKm?1:0) + (teSecs?1:0) + (teRitme?1:0);
 
-  $('r-tassa').textContent   = Math.round(tassa);
-  $('r-perdua').textContent  = Math.round(perdua) + ' mL';
-  $('r-pct').textContent     = pct.toFixed(1) + '%';
+  if (count < 1) {
+    alert('Cal introduir almenys el Temps total de la sessió.');
+    return;
+  }
+
+  let durada; // minuts
+  if (teSecs)             durada = secs / 60;
+  else if (teKm && teRitme) { durada = km * ritme; setTemps(durada*60); }
+  else { alert('Cal introduir el Temps total de la sessió.'); return; }
+
+  const { perdua, tassa } = calcularTassa(pesBefore, pesAfter, liquid, orina, durada);
+  const pct      = ((pesBefore - pesAfter) / pesBefore * 100);
+  const recomanat = Math.round(tassa * 0.8);
+  const deficit  = Math.round(perdua - liquid);
+
+  $('r-tassa').textContent    = Math.round(tassa);
+  $('r-perdua').textContent   = Math.round(perdua) + ' mL';
+  $('r-pct').textContent      = pct.toFixed(1) + '%';
   $('r-recomanat').textContent = recomanat + ' mL';
-  $('r-deficit').textContent = deficit > 0 ? '+' + deficit + ' mL' : deficit + ' mL';
+  $('r-deficit').textContent  = deficit > 0 ? '+' + deficit + ' mL' : deficit + ' mL';
 
   let badge = '';
   if (pct < 2) badge = `<div class="hydro-badge ok">✓ Hidratació acceptable (&lt;2%)</div>`;
@@ -1232,6 +1379,7 @@ function calcular() {
   };
 }
 
+
 function guardar() {
   if (!window._currentSession) return;
   const sessions = getSessions();
@@ -1252,44 +1400,123 @@ function resetar() {
 // ── HISTORIAL ──
 function renderHistorial() {
   const sessions = getSessions();
+  const mesures  = getMesures();
   const el = $('historial-content');
-  if (!sessions.length) {
-    el.innerHTML = `<div class="history-empty"><div class="icon">📊</div>Encara no hi ha sessions registrades.<br>Comença a registrar a la pestanya <strong>Registre</strong>.</div>`;
+
+  if (!sessions.length && !mesures.length) {
+    el.innerHTML = `<div class="history-empty"><div class="icon">📊</div>Encara no hi ha registres.<br>Comença a registrar a <strong>Sudor</strong> o <strong>Sabates</strong>.</div>`;
     return;
   }
 
-  const avg = Math.round(sessions.reduce((s,x) => s + x.tassa, 0) / sessions.length);
+  // Barreja sessions sudor + mesures sabates i ordena per data descendent
+  const items = [
+    ...sessions.map((s, i) => ({ tipus: 'sudor', data: s, idx: i })),
+    ...mesures.map(m => ({ tipus: 'sabata', data: m }))
+  ].sort((a, b) => b.data.ts - a.data.ts);
 
-  el.innerHTML = `
-    <div class="avg-banner">
-      <div>
-        <div class="avg-banner-label">Tassa mitjana</div>
-        <div style="font-size:0.65rem;color:var(--muted);font-weight:600">${sessions.length} sessions</div>
-      </div>
-      <div class="avg-banner-val">${avg} <span style="font-family:var(--font-b);font-size:0.75rem;font-weight:600;color:var(--muted)">mL/h</span></div>
-    </div>
-    ${sessions.map((s, i) => `
-      <div class="session-card">
-        <button class="delete-btn" onclick="eliminarSessio(${i}, event)">✕</button>
-        <div class="session-card-header">
-          <div>
-            <div class="session-date">${formatDate(s.ts)}</div>
-            <div style="font-size:0.65rem;color:var(--muted);font-weight:600;margin-top:0.15rem">${s.temp}°C · ${s.humetat || '—'}% HR · ${s.durada} min</div>
-          </div>
-          <div style="text-align:right">
-            <div class="session-rate">${s.tassa}<span> mL/h</span></div>
-            <div style="font-size:0.65rem;color:${s.pct < 2 ? 'var(--accent3)' : s.pct < 3 ? 'var(--accent2)' : 'var(--warn)'};font-weight:700">${s.pct}% pes perdut</div>
-          </div>
+  // Resum global
+  const avgTassa = sessions.length
+    ? Math.round(sessions.reduce((s,x) => s + x.tassa, 0) / sessions.length)
+    : null;
+
+  // Agrupa per sabata per mostrar la mitjana al header
+  const mitjanesSabata = {};
+  const sabates = getSabates();
+  sabates.forEach(sab => {
+    const ms = mesures.filter(m => m.sabata === sab);
+    if (ms.length) mitjanesSabata[sab] = ms.reduce((a,m) => a + m.pct, 0) / ms.length;
+  });
+
+  let headerHtml = '';
+  if (avgTassa !== null) {
+    headerHtml += `
+      <div class="avg-banner">
+        <div>
+          <div class="avg-banner-label">Tassa sudoració mitja</div>
+          <div style="font-size:0.65rem;color:var(--muted);font-weight:600">${sessions.length} sessions</div>
         </div>
-        <div class="session-chips">
-          <div class="chip">📉 ${s.perdua} mL perduts</div>
-          ${s.ritme ? `<div class="chip">🏃 ${s.ritme} min/km</div>` : ''}
-          ${s.fc ? `<div class="chip ${s.fc > 160 ? 'hi' : ''}">❤️ ${s.fc} ppm</div>` : ''}
-          ${s.calories ? `<div class="chip">🔥 ${s.calories} kcal</div>` : ''}
-        </div>
-      </div>
-    `).join('')}
-  `;
+        <div class="avg-banner-val">${avgTassa} <span style="font-family:var(--font-b);font-size:0.75rem;font-weight:600;color:var(--muted)">mL/h</span></div>
+      </div>`;
+  }
+  if (Object.keys(mitjanesSabata).length) {
+    headerHtml += `<div style="display:flex;flex-wrap:wrap;gap:0.5rem;margin-bottom:1rem">`;
+    Object.entries(mitjanesSabata).forEach(([sab, avg]) => {
+      headerHtml += `
+        <div style="background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:0.5rem 0.8rem;flex:1;min-width:120px">
+          <div style="font-size:0.58rem;font-weight:700;color:var(--muted);letter-spacing:0.1em;text-transform:uppercase">👟 ${sab}</div>
+          <div style="font-family:var(--font-h);font-size:1.2rem;font-weight:800;color:${pctColor(avg)}">${avg.toFixed(2)}%</div>
+          <div style="font-size:0.58rem;color:var(--muted);font-weight:600">Mitjana contacte</div>
+        </div>`;
+    });
+    headerHtml += `</div>`;
+  }
+
+  // Filtre actiu
+  const filtreActiu = window._histFiltreActiu || 'tot';
+  headerHtml += `
+    <div style="display:flex;gap:0.4rem;margin-bottom:1rem;overflow-x:auto;padding-bottom:2px">
+      <button onclick="filtreHistorial('tot',this)"   class="hist-btn ${filtreActiu==='tot'    ?'hist-btn-on':''}" >Tot</button>
+      <button onclick="filtreHistorial('sudor',this)" class="hist-btn ${filtreActiu==='sudor'  ?'hist-btn-on':''}" >💧 Sudor</button>
+      <button onclick="filtreHistorial('sabata',this)"class="hist-btn ${filtreActiu==='sabata' ?'hist-btn-on':''}" >👟 Sabates</button>
+    </div>`;
+
+  // Renderitza cada item
+  const itemsFiltrats = filtreActiu === 'tot' ? items : items.filter(it => it.tipus === filtreActiu);
+
+  const cardsHtml = itemsFiltrats.map(it => {
+    if (it.tipus === 'sudor') {
+      const s = it.data;
+      const i = it.idx;
+      const duradaText = s.durada ? `${Math.round(s.durada)} min` : '—';
+      return `
+        <div class="session-card" style="border-left:3px solid var(--accent)">
+          <button class="delete-btn" onclick="eliminarSessio(${i}, event)">✕</button>
+          <div class="session-card-header">
+            <div>
+              <div style="font-size:0.58rem;font-weight:700;color:var(--accent);letter-spacing:0.12em;text-transform:uppercase">💧 Sudoració</div>
+              <div class="session-date">${formatDate(s.ts)}</div>
+              <div style="font-size:0.65rem;color:var(--muted);font-weight:600;margin-top:0.15rem">${s.temp || '—'}°C · ${s.humetat || '—'}% HR · ${duradaText}</div>
+            </div>
+            <div style="text-align:right">
+              <div class="session-rate">${s.tassa}<span> mL/h</span></div>
+              <div style="font-size:0.65rem;color:${s.pct < 2 ? 'var(--accent3)' : s.pct < 3 ? 'var(--accent2)' : 'var(--warn)'};font-weight:700">${s.pct}% pes perdut</div>
+            </div>
+          </div>
+          <div class="session-chips">
+            <div class="chip">📉 ${s.perdua} mL perduts</div>
+            ${s.ritme ? `<div class="chip">🏃 ${s.ritme} min/km</div>` : ''}
+            ${s.fc ? `<div class="chip ${s.fc > 160 ? 'hi' : ''}">❤️ ${s.fc} ppm</div>` : ''}
+            ${s.calories ? `<div class="chip">🔥 ${s.calories} kcal</div>` : ''}
+          </div>
+        </div>`;
+    } else {
+      const m = it.data;
+      const color = pctColor(m.pct);
+      return `
+        <div class="session-card" style="border-left:3px solid ${color}">
+          <button class="delete-btn" onclick="eliminarMesura(${m.ts});renderHistorial()">✕</button>
+          <div class="session-card-header">
+            <div>
+              <div style="font-size:0.58rem;font-weight:700;color:${color};letter-spacing:0.12em;text-transform:uppercase">👟 ${m.sabata}</div>
+              <div class="session-date">${formatDate(m.ts)}</div>
+              <div style="font-size:0.65rem;color:var(--muted);font-weight:600;margin-top:0.15rem;text-transform:capitalize">${m.peu}${m.ritme ? ' · ' + m.ritme + ' min/km' : ''}</div>
+            </div>
+            <div style="text-align:right">
+              <div style="font-family:var(--font-h);font-size:2rem;font-weight:800;color:${color};line-height:1">${m.pct.toFixed(1)}<span style="font-family:var(--font-b);font-size:0.7rem;font-weight:600;color:var(--muted)">%</span></div>
+              <div style="font-size:0.6rem;color:var(--muted);font-weight:600">contacte terra</div>
+            </div>
+          </div>
+          ${m.notes ? `<div style="font-size:0.7rem;color:var(--muted);font-weight:500;margin-top:0.3rem;font-style:italic">${m.notes}</div>` : ''}
+        </div>`;
+    }
+  }).join('');
+
+  el.innerHTML = headerHtml + (itemsFiltrats.length ? cardsHtml : '<div class="history-empty" style="padding:2rem 0"><div class="icon">🔍</div>Sense registres per a aquest filtre.</div>');
+}
+
+function filtreHistorial(tipus, btn) {
+  window._histFiltreActiu = tipus;
+  renderHistorial();
 }
 
 function eliminarSessio(i, e) {
@@ -1319,37 +1546,47 @@ function renderAvgInfo() {
 }
 
 function estimarCarrera() {
-  const dist = fv('r-dist');
-  const ritme = parsePace($('r-ritme').value) || 6;
-  const temp = fv('r-temp') || 20;
-  const hum = fv('r-hum') || 60;
+  const dist  = getDist();
+  const secs  = getTempsSecs();
+  const ritme = getRitmeMin();
+  const temp  = fv('r-temp') || 20;
+  const hum   = fv('r-hum') || 60;
 
-  if (!dist) { alert('Introdueix la distància de la carrera.'); return; }
+  const teKm    = dist > 0;
+  const teSecs  = secs > 0;
+  const teRitme = ritme > 0;
+  const count   = (teKm?1:0) + (teSecs?1:0) + (teRitme?1:0);
 
-  const baseTassa = getAvgTassa() || 800;
-  const fa = factorAmbient(temp, hum);
+  if (count < 2) {
+    alert('Introdueix almenys 2 d\'aquests 3 camps: Distància, Temps o Ritme.');
+    return;
+  }
+
+  let kmFinal, tempsMin, ritmeFinal;
+  if (teKm && teSecs)   { kmFinal = dist; tempsMin = secs/60; ritmeFinal = tempsMin/dist; setRitme(ritmeFinal); }
+  else if (teKm && teRitme) { kmFinal = dist; ritmeFinal = ritme; tempsMin = dist*ritme; setTemps(tempsMin*60); }
+  else                  { tempsMin = secs/60; ritmeFinal = ritme; kmFinal = tempsMin/ritme; setDist(kmFinal); }
+
+  const baseTassa     = getAvgTassa() || 800;
+  const fa            = factorAmbient(temp, hum);
   const tassaAjustada = Math.round(baseTassa * fa);
+  const tempsH        = tempsMin / 60;
+  const totalFluid    = Math.round(tassaAjustada * tempsH);
+  const fluidPer15    = Math.round(tassaAjustada / 4);
 
-  const tempsMin = dist * ritme;
-  const tempsH = tempsMin / 60;
-  const totalFluid = Math.round(tassaAjustada * tempsH);
-  const fluidHora = tassaAjustada;
-  const fluidPer15 = Math.round(fluidHora / 4);
+  let nomCarrera = kmFinal < 5 ? 'Cursa curta' : kmFinal < 15 ? 'Cursa 10K–15K' : kmFinal < 25 ? 'Mitja marató' : kmFinal < 45 ? 'Marató' : kmFinal < 80 ? 'Ultra curta' : 'Ultra trail';
 
-  // Nom carrera
-  let nomCarrera = dist < 5 ? 'Cursa curta' : dist < 15 ? 'Cursa 10K–15K' : dist < 25 ? 'Mitja marató' : dist < 45 ? 'Marató' : dist < 80 ? 'Ultra curta' : 'Ultra trail';
-
-  $('cr-nom').textContent = `${nomCarrera} · ${dist} km`;
+  $('cr-nom').textContent   = `${nomCarrera} · ${Math.round(kmFinal*100)/100} km`;
   $('cr-temps').textContent = formatTime(tempsMin);
   $('cr-tassa').textContent = tassaAjustada + ' mL/h';
   $('cr-total').textContent = totalFluid + ' mL';
-  $('cr-hora').textContent = fluidHora + ' mL/h';
+  $('cr-hora').textContent  = tassaAjustada + ' mL/h';
 
   let consell = `<strong>Pla d'hidratació:</strong><br>`;
-  consell += `· Beure aprox. <strong>${fluidPer15} mL cada 15 min</strong> (${fluidHora} mL/h).<br>`;
-  consell += `· Factor ambient aplicat: ×${fa.toFixed(2)} (${temp}°C, ${hum || '—'}% HR).<br>`;
-  if (fa > 1.3) consell += `· ⚠ Condicions càlides/humides: augmenta la freqüència de hidratació.<br>`;
-  if (dist > 30) consell += `· Per ultratrails considera sals minerals cada 45–60 min.<br>`;
+  consell += `· Beure aprox. <strong>${fluidPer15} mL cada 15 min</strong> (${tassaAjustada} mL/h).<br>`;
+  consell += `· Factor ambient: ×${fa.toFixed(2)} (${temp}°C, ${hum}% HR).<br>`;
+  if (fa > 1.3) consell += `· ⚠ Condicions càlides/humides: augmenta la freqüència.<br>`;
+  if (kmFinal > 30) consell += `· Per ultratrails considera sals minerals cada 45–60 min.<br>`;
   consell += `· Comença la carrera ben hidratat (orina clara).`;
 
   $('cr-consell').innerHTML = consell;
@@ -1433,16 +1670,15 @@ function eliminarMesura(ts) {
 }
 
 function pctColor(pct) {
-  // 30% = ok, 40% = warning, >45% = high
-  if (pct < 35) return 'var(--accent3)';
-  if (pct < 42) return 'var(--accent)';
-  if (pct < 48) return 'var(--accent2)';
-  return 'var(--warn)';
+  if (pct < 51)  return 'var(--accent3)';   // verd
+  if (pct < 52)  return 'var(--accent2)';   // ambre
+  return 'var(--warn)';                      // roig
 }
 
 function renderSabates() {
   const sabates = getSabates();
-  const mesures = getMesures();
+  // Ordena totes les mesures per timestamp descendent (última primer)
+  const mesures = getMesures().slice().sort((a, b) => b.ts - a.ts);
 
   // Llista de sabates (chips + delete)
   const llista = $('sab-llista');
@@ -1535,33 +1771,55 @@ function secsToHMS(secs) {
 }
 
 function calcRitme() {
-  const km  = parseFloat($('p-km').value) || 0;
-  const h   = parseInt($('p-h').value) || 0;
-  const m   = parseInt($('p-m').value) || 0;
-  const s   = parseInt($('p-s').value) || 0;
-  const asc = parseInt($('p-asc').value) || 0;
+  const km    = getDist();
+  const secs  = getTempsSecs();
+  const ritme = getRitmeMin();
+  const asc   = parseInt($('p-asc').value) || 0;
 
-  if (km <= 0 || (h + m + s) === 0) {
-    alert('Cal introduir distància i temps.');
+  // Necessitem almenys 2 dels 3 camps
+  const teKm    = km > 0;
+  const teSecs  = secs > 0;
+  const teRitme = ritme > 0;
+  const count   = (teKm ? 1:0) + (teSecs ? 1:0) + (teRitme ? 1:0);
+
+  if (count < 2) {
+    alert('Introdueix almenys 2 d\'aquests 3 camps: Distància, Temps o Ritme.');
     return;
   }
 
-  const totalSecs = h * 3600 + m * 60 + s;
-  const totalMin  = totalSecs / 60;
-  const ritme     = totalMin / km;
-  const vel       = km / (totalMin / 60);
+  // Calcula el 3r que falte
+  let kmFinal, secsFinal, ritmeFinal;
 
-  $('pr-ritme').textContent = minToStr(ritme);
+  if (teKm && teSecs) {
+    kmFinal    = km;
+    secsFinal  = secs;
+    ritmeFinal = (secs / 60) / km;
+    setRitme(ritmeFinal);
+  } else if (teKm && teRitme) {
+    kmFinal    = km;
+    ritmeFinal = ritme;
+    secsFinal  = km * ritme * 60;
+    setTemps(secsFinal);
+  } else { // teSecs && teRitme
+    secsFinal  = secs;
+    ritmeFinal = ritme;
+    kmFinal    = (secs / 60) / ritme;
+    setDist(kmFinal);
+  }
+
+  const totalMin = secsFinal / 60;
+  const vel      = kmFinal / (totalMin / 60);
+
+  $('pr-ritme').textContent = minToStr(ritmeFinal);
   $('pr-vel').textContent   = vel.toFixed(2);
-  $('pr-temps').textContent = secsToHMS(totalSecs);
+  $('pr-temps').textContent = secsToHMS(secsFinal);
 
   if (ascensActiu && asc > 0) {
-    const extraSecs  = asc * 1.74;
-    const equivSecs  = Math.max(0, totalSecs - extraSecs);
-    const ritmeAj    = (equivSecs / 60) / km;
-
-    $('pr-ritme-aj').textContent  = minToStr(ritmeAj);
-    $('pr-temps-eq').textContent  = secsToHMS(equivSecs);
+    const extraSecs = asc * 1.74;
+    const equivSecs = Math.max(0, secsFinal - extraSecs);
+    const ritmeAj   = (equivSecs / 60) / kmFinal;
+    $('pr-ritme-aj').textContent    = minToStr(ritmeAj);
+    $('pr-temps-eq').textContent    = secsToHMS(equivSecs);
     $('pr-temps-extra').textContent = '−' + secsToHMS(extraSecs);
     $('ritme-ajustat-block').style.display = 'block';
   } else {
