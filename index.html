@@ -975,9 +975,11 @@
 
   <div class="dades-card">
     <div class="dades-card-title">📤 Exportar dades</div>
-    <div class="dades-info">Descarrega totes les sessions guardades en format JSON. Guarda el fitxer com a còpia de seguretat o per importar-lo en un altre dispositiu.</div>
+    <div class="dades-info">Descarrega totes les sessions, sabates i mesures en format JSON.</div>
     <button class="btn green small" onclick="exportarDades()">⬇ Descarregar JSON</button>
     <button class="btn secondary small" onclick="exportarCSV()">⬇ Descarregar CSV</button>
+    <button class="btn secondary small" onclick="copiarJSON()">📋 Copiar JSON al porta-papers</button>
+    <div id="export-resum" style="font-size:0.75rem;color:var(--accent3);font-weight:600;margin-top:0.5rem;display:none"></div>
   </div>
 
   <div class="dades-card">
@@ -1839,45 +1841,120 @@ function resetRitme() {
 // ── DADES ──
 function renderDadesResum() {
   const sessions = getSessions();
+  const sabates  = getSabates();
+  const mesures  = getMesures();
   const el = $('dades-resum');
-  if (!sessions.length) {
-    el.innerHTML = '<span style="color:var(--muted)">No hi ha sessions guardades.</span>';
+
+  if (!sessions.length && !sabates.length && !mesures.length) {
+    el.innerHTML = '<span style="color:var(--muted)">No hi ha dades guardades.</span>';
     return;
   }
-  const avg = Math.round(sessions.reduce((s,x) => s + x.tassa, 0) / sessions.length);
-  const minDate = new Date(Math.min(...sessions.map(s=>s.ts))).toLocaleDateString('ca-ES');
-  const maxDate = new Date(Math.max(...sessions.map(s=>s.ts))).toLocaleDateString('ca-ES');
+
+  const avgTassa = sessions.length
+    ? Math.round(sessions.reduce((s,x) => s + x.tassa, 0) / sessions.length)
+    : null;
+  const totalBytes = JSON.stringify({sessions, sudorlab_sabates: sabates, sudorlab_mesures: mesures}).length;
+
   el.innerHTML = `
-    📋 <strong>${sessions.length}</strong> sessions guardades<br>
-    📅 Del <strong>${minDate}</strong> al <strong>${maxDate}</strong><br>
-    💧 Tassa mitjana: <strong>${avg} mL/h</strong><br>
-    💾 Espai usat: <strong>~${(JSON.stringify(sessions).length / 1024).toFixed(1)} KB</strong>
+    ${sessions.length ? `💧 <strong>${sessions.length}</strong> sessions · Tassa mitja: <strong>${avgTassa} mL/h</strong><br>` : ''}
+    ${sabates.length  ? `👟 <strong>${sabates.length}</strong> sabates · <strong>${mesures.length}</strong> mesures de contacte<br>` : ''}
+    ${sessions.length ? `📅 Del <strong>${new Date(Math.min(...sessions.map(s=>s.ts))).toLocaleDateString('ca-ES')}</strong> al <strong>${new Date(Math.max(...sessions.map(s=>s.ts))).toLocaleDateString('ca-ES')}</strong><br>` : ''}
+    💾 Espai usat: <strong>~${(totalBytes/1024).toFixed(1)} KB</strong>
   `;
 }
 
 function exportarDades() {
   const sessions = getSessions();
-  if (!sessions.length) { alert('No hi ha dades per exportar.'); return; }
-  const blob = new Blob([JSON.stringify({ versio: 1, exportat: new Date().toISOString(), sessions }, null, 2)], { type: 'application/json' });
-  const url  = URL.createObjectURL(blob);
-  const a    = document.createElement('a');
-  a.href = url;
-  a.download = `sudorlab_${new Date().toISOString().slice(0,10)}.json`;
-  a.click();
-  URL.revokeObjectURL(url);
+  const sabates  = getSabates();
+  const mesures  = getMesures();
+  if (!sessions.length && !sabates.length && !mesures.length) {
+    alert('No hi ha dades per exportar.'); return;
+  }
+  const data = {
+    versio: 1,
+    exportat: new Date().toISOString(),
+    sessions,
+    sudorlab_sabates: sabates,
+    sudorlab_mesures: mesures
+  };
+  const json = JSON.stringify(data, null, 2);
+
+  // Mètode 1: Blob + link (Android PWA necessita appendChild)
+  try {
+    const blob = new Blob([json], { type: 'application/json' });
+    const url  = URL.createObjectURL(blob);
+    const a    = document.createElement('a');
+    a.href     = url;
+    a.download = `sudorlab_${new Date().toISOString().slice(0,10)}.json`;
+    a.style.display = 'none';
+    document.body.appendChild(a);
+    a.click();
+    setTimeout(() => { document.body.removeChild(a); URL.revokeObjectURL(url); }, 1000);
+  } catch(e) {
+    // Mètode 2: data URI (fallback)
+    const uri = 'data:application/json;charset=utf-8,' + encodeURIComponent(json);
+    window.open(uri, '_blank');
+  }
+
+  // Mostra resum del que s'exporta
+  const resum = $('export-resum');
+  if (resum) {
+    resum.textContent = `✓ ${sessions.length} sessions · ${sabates.length} sabates · ${mesures.length} mesures`;
+    resum.style.display = 'block';
+  }
+}
+
+function copiarJSON() {
+  const data = {
+    versio: 1,
+    exportat: new Date().toISOString(),
+    sessions: getSessions(),
+    sudorlab_sabates: getSabates(),
+    sudorlab_mesures: getMesures()
+  };
+  const json = JSON.stringify(data, null, 2);
+  navigator.clipboard.writeText(json).then(() => {
+    const resum = $('export-resum');
+    if (resum) {
+      resum.textContent = `✓ JSON copiat! ${data.sessions.length} sessions · ${data.sudorlab_sabates.length} sabates · ${data.sudorlab_mesures.length} mesures`;
+      resum.style.display = 'block';
+    }
+  }).catch(() => {
+    alert('No s\'ha pogut copiar. Usa el botó de descàrrega.');
+  });
 }
 
 function exportarCSV() {
   const sessions = getSessions();
-  if (!sessions.length) { alert('No hi ha dades per exportar.'); return; }
-  const caps = ['Data','Tassa mL/h','Pes Abans','Pes Despres','Liquid mL','Orina mL','Durada min','Ritme','FC','Calories','Temp','Humetat','Perdua mL','Pct Pes'];
-  const rows = sessions.map(s => [
-    new Date(s.ts).toLocaleDateString('ca-ES'),
-    s.tassa, s.pesBefore, s.pesAfter, s.liquid, s.orina,
-    s.durada, s.ritme || '', s.fc || '', s.calories || '',
-    s.temp, s.humetat || '', s.perdua, s.pct
-  ].join(','));
-  const csv  = [caps.join(','), ...rows].join('\n');
+  const mesures  = getMesures();
+  if (!sessions.length && !mesures.length) { alert('No hi ha dades per exportar.'); return; }
+
+  let csv = '';
+
+  // Bloc sessions sudoració
+  if (sessions.length) {
+    csv += 'SESSIONS SUDORACIÓ\n';
+    const caps = ['Data','Tassa mL/h','Pes Abans','Pes Despres','Liquid mL','Orina mL','Durada min','Ritme','FC','Calories','Temp','Humetat','Perdua mL','Pct Pes'];
+    const rows = sessions.map(s => [
+      new Date(s.ts).toLocaleDateString('ca-ES'),
+      s.tassa, s.pesBefore, s.pesAfter, s.liquid, s.orina,
+      s.durada ? Math.round(s.durada) : '', s.ritme || '', s.fc || '', s.calories || '',
+      s.temp, s.humetat || '', s.perdua, s.pct
+    ].join(','));
+    csv += caps.join(',') + '\n' + rows.join('\n') + '\n\n';
+  }
+
+  // Bloc mesures sabates
+  if (mesures.length) {
+    csv += 'MESURES SABATES\n';
+    const caps2 = ['Data','Sabata','Peu','% Contacte','Ritme','Notes'];
+    const rows2 = mesures.slice().sort((a,b) => b.ts-a.ts).map(m => [
+      new Date(m.ts).toLocaleDateString('ca-ES'),
+      `"${m.sabata}"`, m.peu, m.pct, m.ritme || '', `"${m.notes || ''}"`
+    ].join(','));
+    csv += caps2.join(',') + '\n' + rows2.join('\n') + '\n';
+  }
+
   const blob = new Blob([csv], { type: 'text/csv' });
   const url  = URL.createObjectURL(blob);
   const a    = document.createElement('a');
@@ -1894,25 +1971,26 @@ function importarDades(event) {
   reader.onload = e => {
     try {
       const data = JSON.parse(e.target.result);
+      let afegidesSessions = 0, afegidesSabates = 0, afegidesMesures = 0;
 
       // ── Sessions de sudoració ──
       const novesSessions = data.sessions || (Array.isArray(data) ? data : []);
-      const existentsSessions = getSessions();
-      const tsExistents = new Set(existentsSessions.map(s => s.ts));
-      const afegidesSessions = novesSessions.filter(s => !tsExistents.has(s.ts));
-      if (afegidesSessions.length) saveSessions([...afegidesSessions, ...existentsSessions]);
+      if (novesSessions.length) {
+        const existents = getSessions();
+        const tsEx = new Set(existents.map(s => s.ts));
+        const noves = novesSessions.filter(s => !tsEx.has(s.ts));
+        if (noves.length) { saveSessions([...noves, ...existents]); afegidesSessions = noves.length; }
+      }
 
-      // ── Sabates ──
-      let afegidesSabates = 0;
-      if (data.sudorlab_sabates && Array.isArray(data.sudorlab_sabates)) {
+      // ── Sabates (noms) ──
+      if (Array.isArray(data.sudorlab_sabates) && data.sudorlab_sabates.length) {
         const existents = getSabates();
         const noves = data.sudorlab_sabates.filter(s => !existents.includes(s));
         if (noves.length) { saveSabates([...existents, ...noves]); afegidesSabates = noves.length; }
       }
 
       // ── Mesures de sabates ──
-      let afegidesMesures = 0;
-      if (data.sudorlab_mesures && Array.isArray(data.sudorlab_mesures)) {
+      if (Array.isArray(data.sudorlab_mesures) && data.sudorlab_mesures.length) {
         const existents = getMesures();
         const tsEx = new Set(existents.map(m => m.ts));
         const noves = data.sudorlab_mesures.filter(m => !tsEx.has(m.ts));
@@ -1921,9 +1999,9 @@ function importarDades(event) {
 
       const st = $('import-status');
       const parts = [];
-      if (afegidesSessions.length) parts.push(`${afegidesSessions.length} sessions`);
-      if (afegidesSabates) parts.push(`${afegidesSabates} sabates`);
-      if (afegidesMesures) parts.push(`${afegidesMesures} mesures`);
+      if (afegidesSessions) parts.push(`${afegidesSessions} sessions`);
+      if (afegidesSabates)  parts.push(`${afegidesSabates} sabates`);
+      if (afegidesMesures)  parts.push(`${afegidesMesures} mesures`);
       st.textContent = parts.length
         ? `✓ Importat: ${parts.join(', ')}`
         : '⚠ Cap dada nova (tot ja existia)';
@@ -1939,12 +2017,18 @@ function importarDades(event) {
 
 function esborrarTot() {
   const sessions = getSessions();
-  if (!sessions.length) { alert('No hi ha dades.'); return; }
-  if (!confirm(`Segur que vols eliminar les ${sessions.length} sessions? Aquesta acció no es pot desfer.`)) return;
+  const mesures  = getMesures();
+  const sabates  = getSabates();
+  const total = sessions.length + mesures.length + sabates.length;
+  if (!total) { alert('No hi ha dades.'); return; }
+  if (!confirm(`Segur que vols eliminar tot?\n· ${sessions.length} sessions de sudoració\n· ${sabates.length} sabates\n· ${mesures.length} mesures\n\nAquesta acció no es pot desfer.`)) return;
   localStorage.removeItem('sudorlab_sessions');
+  localStorage.removeItem('sudorlab_sabates');
+  localStorage.removeItem('sudorlab_mesures');
   renderDadesResum();
-  alert('Totes les sessions han estat eliminades.');
+  alert('Totes les dades han estat eliminades.');
 }
+
 
 // SW
 if ('serviceWorker' in navigator) {
