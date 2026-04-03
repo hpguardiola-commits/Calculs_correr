@@ -1426,7 +1426,11 @@ function renderHistorial() {
   const sabates = getSabates();
   sabates.forEach(sab => {
     const ms = mesures.filter(m => m.sabata === sab);
-    if (ms.length) mitjanesSabata[sab] = ms.reduce((a,m) => a + m.pct, 0) / ms.length;
+    if (ms.length) {
+      const avg    = ms.reduce((a,m) => a + m.pct, 0) / ms.length;
+      const avgDev = ms.reduce((a,m) => a + Math.abs(m.pct - 50), 0) / ms.length;
+      mitjanesSabata[sab] = { avg, avgDev };
+    }
   });
 
   let headerHtml = '';
@@ -1442,12 +1446,21 @@ function renderHistorial() {
   }
   if (Object.keys(mitjanesSabata).length) {
     headerHtml += `<div style="display:flex;flex-wrap:wrap;gap:0.5rem;margin-bottom:1rem">`;
-    Object.entries(mitjanesSabata).forEach(([sab, avg]) => {
+    Object.entries(mitjanesSabata).forEach(([sab, {avg, avgDev}]) => {
+      const devColor = avgDev < 1 ? 'var(--accent3)' : avgDev < 2 ? 'var(--accent2)' : 'var(--warn)';
       headerHtml += `
-        <div style="background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:0.5rem 0.8rem;flex:1;min-width:120px">
-          <div style="font-size:0.58rem;font-weight:700;color:var(--muted);letter-spacing:0.1em;text-transform:uppercase">👟 ${sab}</div>
-          <div style="font-family:var(--font-h);font-size:1.2rem;font-weight:800;color:${pctColor(avg)}">${avg.toFixed(2)}%</div>
-          <div style="font-size:0.58rem;color:var(--muted);font-weight:600">Mitjana contacte</div>
+        <div style="background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:0.5rem 0.8rem;flex:1;min-width:130px">
+          <div style="font-size:0.58rem;font-weight:700;color:var(--muted);letter-spacing:0.1em;text-transform:uppercase;margin-bottom:0.3rem">👟 ${sab}</div>
+          <div style="display:flex;gap:0.8rem;align-items:baseline">
+            <div>
+              <div style="font-family:var(--font-h);font-size:1.1rem;font-weight:800;color:${pctColor(avg)}">${avg.toFixed(2)}%</div>
+              <div style="font-size:0.55rem;color:var(--muted);font-weight:600">Mitj. contacte</div>
+            </div>
+            <div>
+              <div style="font-family:var(--font-h);font-size:1.1rem;font-weight:800;color:${devColor}">${avgDev.toFixed(2)}</div>
+              <div style="font-size:0.55rem;color:var(--muted);font-weight:600">Mitj. desv./50</div>
+            </div>
+          </div>
         </div>`;
     });
     headerHtml += `</div>`;
@@ -1506,6 +1519,7 @@ function renderHistorial() {
             <div style="text-align:right">
               <div style="font-family:var(--font-h);font-size:2rem;font-weight:800;color:${color};line-height:1">${m.pct.toFixed(1)}<span style="font-family:var(--font-b);font-size:0.7rem;font-weight:600;color:var(--muted)">%</span></div>
               <div style="font-size:0.6rem;color:var(--muted);font-weight:600">contacte terra</div>
+              <div style="font-family:var(--font-h);font-size:1rem;font-weight:800;color:${Math.abs(m.pct-50)<1?'var(--accent3)':Math.abs(m.pct-50)<2?'var(--accent2)':'var(--warn)'}">${Math.abs(m.pct-50).toFixed(1)} <span style="font-family:var(--font-b);font-size:0.6rem;font-weight:600;color:var(--muted)">desv./50</span></div>
             </div>
           </div>
           ${m.notes ? `<div style="font-size:0.7rem;color:var(--muted);font-weight:500;margin-top:0.3rem;font-style:italic">${m.notes}</div>` : ''}
@@ -1710,20 +1724,32 @@ function renderSabates() {
     const ms = mesures.filter(m => m.sabata === sab);
     if (!ms.length) return '';
 
-    const avg = ms.reduce((a, m) => a + m.pct, 0) / ms.length;
-    const color = pctColor(avg);
+    const avg    = ms.reduce((a, m) => a + m.pct, 0) / ms.length;
+    const avgDev = ms.reduce((a, m) => a + Math.abs(m.pct - 50), 0) / ms.length;  // Mitjana valor absolut desv./50
+    const color  = pctColor(avg);
 
-    const rows = ms.map(m => `
+    // Color per a la desviació absoluta
+    const devColor = (dev) => {
+      if (dev < 1)  return 'var(--accent3)';
+      if (dev < 2)  return 'var(--accent2)';
+      return 'var(--warn)';
+    };
+
+    const rows = ms.map(m => {
+      const dev = Math.abs(m.pct - 50);
+      return `
       <tr>
         <td>${new Date(m.ts).toLocaleDateString('ca-ES',{day:'2-digit',month:'short'})}</td>
         <td style="text-transform:capitalize">${m.peu}</td>
         <td><span class="pct-val" style="color:${pctColor(m.pct)}">${m.pct.toFixed(1)}%</span></td>
+        <td><span style="font-family:var(--font-h);font-weight:800;color:${devColor(dev)}">${dev.toFixed(1)}</span></td>
         <td style="color:var(--muted)">${m.ritme || '—'}</td>
-        <td style="color:var(--muted);font-size:0.68rem;max-width:80px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${m.notes || ''}</td>
+        <td style="color:var(--muted);font-size:0.68rem;max-width:60px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${m.notes || ''}</td>
         <td><button class="sab-del-row" onclick="eliminarMesura(${m.ts})">✕</button></td>
-      </tr>`).join('');
+      </tr>`;
+    }).join('');
 
-    const barW = Math.min(100, avg * 2); // visual bar
+    const barW = Math.min(100, avg * 2);
     return `
       <div class="sab-card">
         <div class="sab-card-header">
@@ -1731,16 +1757,22 @@ function renderSabates() {
             <div class="sab-nom-title">👟 ${sab}</div>
             <div class="sab-avg-lbl">${ms.length} mesura${ms.length>1?'s':''}</div>
           </div>
-          <div style="text-align:right">
-            <div class="sab-avg-badge" style="color:${color}">${avg.toFixed(2)}%</div>
-            <div class="sab-avg-lbl">Mitjana contacte</div>
+          <div style="display:flex;gap:1rem;align-items:flex-end">
+            <div style="text-align:center">
+              <div class="sab-avg-badge" style="color:${color}">${avg.toFixed(2)}%</div>
+              <div class="sab-avg-lbl">Mitj. contacte</div>
+            </div>
+            <div style="text-align:center">
+              <div class="sab-avg-badge" style="color:${devColor(avgDev)}">${avgDev.toFixed(2)}</div>
+              <div class="sab-avg-lbl">Mitj. desv. /50</div>
+            </div>
           </div>
         </div>
         <div class="pct-bar-wrap"><div class="pct-bar" style="width:${barW}%;background:${color}"></div></div>
         <div style="overflow-x:auto;margin-top:0.8rem">
           <table class="sab-table">
             <thead><tr>
-              <th>Data</th><th>Peu</th><th>%</th><th>Ritme</th><th>Notes</th><th></th>
+              <th>Data</th><th>Peu</th><th>%</th><th>Desv.</th><th>Ritme</th><th>Notes</th><th></th>
             </tr></thead>
             <tbody>${rows}</tbody>
           </table>
@@ -1947,10 +1979,10 @@ function exportarCSV() {
   // Bloc mesures sabates
   if (mesures.length) {
     csv += 'MESURES SABATES\n';
-    const caps2 = ['Data','Sabata','Peu','% Contacte','Ritme','Notes'];
+    const caps2 = ['Data','Sabata','Peu','% Contacte','Desv./50','Ritme','Notes'];
     const rows2 = mesures.slice().sort((a,b) => b.ts-a.ts).map(m => [
       new Date(m.ts).toLocaleDateString('ca-ES'),
-      `"${m.sabata}"`, m.peu, m.pct, m.ritme || '', `"${m.notes || ''}"`
+      `"${m.sabata}"`, m.peu, m.pct, Math.abs(m.pct-50).toFixed(2), m.ritme || '', `"${m.notes || ''}"`
     ].join(','));
     csv += caps2.join(',') + '\n' + rows2.join('\n') + '\n';
   }
