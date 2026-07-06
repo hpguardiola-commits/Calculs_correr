@@ -42,6 +42,7 @@
       color: var(--text);
       font-family: var(--font-b);
       min-height: 100dvh;
+      padding-bottom: 110px;
     }
 
     /* ── NAV ── */
@@ -483,6 +484,139 @@
     /* ── NAV compact for 5 tabs ── */
     .nav-tab { padding: 0.4rem 0.55rem; font-size: 0.65rem; }
 
+  /* ── PANELL FLOTANT DRT ── */
+  .fab {
+    position: fixed;
+    bottom: 1.4rem;
+    right: 1.2rem;
+    z-index: 200;
+    width: 52px; height: 52px;
+    background: var(--accent);
+    border: none;
+    border-radius: 50%;
+    color: #0d1117;
+    font-size: 1.4rem;
+    cursor: pointer;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+    display: flex; align-items: center; justify-content: center;
+    transition: transform 0.2s, background 0.2s;
+  }
+  .fab:hover { transform: scale(1.08); }
+  .fab.open  { background: var(--warn); transform: rotate(45deg); }
+
+  .drt-overlay {
+    position: fixed; inset: 0; z-index: 190;
+    background: rgba(0,0,0,0.5);
+    backdrop-filter: blur(2px);
+    display: none;
+    opacity: 0;
+    transition: opacity 0.2s;
+  }
+  .drt-overlay.show { display: block; opacity: 1; }
+
+  .drt-panel {
+    position: fixed;
+    bottom: 0; left: 0; right: 0;
+    z-index: 195;
+    background: var(--bg2);
+    border-top: 1px solid var(--border);
+    border-radius: 16px 16px 0 0;
+    padding: 1rem 1.2rem 2rem;
+    transform: translateY(100%);
+    transition: transform 0.3s cubic-bezier(.4,0,.2,1);
+    max-width: 600px;
+    margin: 0 auto;
+  }
+  .drt-panel.show { transform: translateY(0); }
+
+  .drt-handle {
+    width: 36px; height: 4px;
+    background: var(--border);
+    border-radius: 2px;
+    margin: 0 auto 1rem;
+  }
+
+  .drt-title {
+    font-family: var(--font-h);
+    font-size: 1rem;
+    font-weight: 800;
+    color: var(--text);
+    margin-bottom: 0.8rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .drt-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.7rem;
+    margin-bottom: 0.8rem;
+  }
+
+  .drt-field { display: flex; flex-direction: column; gap: 0.3rem; }
+  .drt-label {
+    font-size: 0.6rem; font-weight: 700;
+    color: var(--accent2); letter-spacing: 0.12em; text-transform: uppercase;
+  }
+  .drt-input {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    color: var(--text);
+    font-family: var(--font-b);
+    font-size: 1.1rem;
+    font-weight: 700;
+    padding: 0.55rem 0.7rem;
+    outline: none;
+    width: 100%;
+    transition: border-color 0.15s;
+  }
+  .drt-input:focus { border-color: var(--accent); }
+  .drt-input::placeholder { color: var(--muted); font-weight: 400; }
+
+  .drt-time-row {
+    display: flex; align-items: center; gap: 0.2rem;
+  }
+  .drt-time-row input {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    color: var(--text);
+    font-family: var(--font-b);
+    font-size: 1.1rem;
+    font-weight: 700;
+    padding: 0.55rem 0.3rem;
+    outline: none;
+    text-align: center;
+    flex: 1;
+    transition: border-color 0.15s;
+  }
+  .drt-time-row input:focus { border-color: var(--accent); }
+  .drt-sep { color: var(--muted); font-size: 1.2rem; font-weight: 700; padding: 0 0.1rem; }
+
+  .drt-hint {
+    font-size: 0.65rem; font-weight: 600;
+    color: var(--accent3);
+    min-height: 1.2rem;
+    margin-bottom: 0.5rem;
+  }
+
+  .drt-btn-row { display: flex; gap: 0.5rem; }
+  .drt-btn {
+    flex: 1;
+    border: none; border-radius: 6px;
+    font-family: var(--font-h);
+    font-size: 0.9rem; font-weight: 800;
+    padding: 0.7rem;
+    cursor: pointer;
+    transition: background 0.15s;
+  }
+  .drt-btn.calc { background: var(--accent); color: #0d1117; }
+  .drt-btn.calc:hover { background: #bef264; }
+  .drt-btn.clear { background: var(--surface2); color: var(--muted); border: 1px solid var(--border); }
+  .drt-btn.clear:hover { color: var(--text); }
+
     /* ── RITME PAGE ── */
     .pace-hero {
       background: linear-gradient(135deg, #1a1f2e 0%, #1f1a2e 100%);
@@ -800,27 +934,22 @@
 
   <div id="avg-info"></div>
 
+  <div class="form-section" style="border-color:rgba(56,189,248,0.3)">
+    <div style="font-size:0.65rem;font-weight:700;color:var(--accent);letter-spacing:0.1em;text-transform:uppercase;margin-bottom:0.3rem">⚡ Distància · Temps · Ritme</div>
+    <div style="font-size:0.78rem;color:var(--muted);font-weight:500">Introdueix els valors a la <strong style="color:var(--text)">barra inferior</strong>.</div>
+  </div>
+
   <div class="form-section">
-    <div class="form-section-title">Paràmetres de la carrera</div>
+    <div class="form-section-title">Condicions del dia</div>
     <div class="form-grid">
       <div class="field">
-        <label>Distància <span class="req">*</span></label>
-        <input id="r-dist" type="number" inputmode="decimal" placeholder="42.2"/>
-        <div class="unit">KM</div>
-      </div>
-      <div class="field">
-        <label>Ritme previst</label>
-        <input id="r-ritme" type="text" inputmode="numeric" placeholder="5:30" maxlength="5" oninput="autoColon(this); autoCalc('ritme')"/>
-        <div class="unit">MIN/KM</div>
-      </div>
-      <div class="field">
         <label>Temperatura</label>
-        <input id="r-temp" type="number" inputmode="numeric" placeholder="20"/>
+        <input id="r-temp" type="number" inputmode="numeric" placeholder="20" oninput="saveShared('r-temp',this.value)"/>
         <div class="unit">°C</div>
       </div>
       <div class="field">
         <label>Humetat</label>
-        <input id="r-hum" type="number" inputmode="numeric" placeholder="60"/>
+        <input id="r-hum" type="number" inputmode="numeric" placeholder="60" oninput="saveShared('r-hum',this.value)"/>
         <div class="unit">%</div>
       </div>
     </div>
@@ -863,46 +992,9 @@
   <div class="page-sub">Ritme real i ajustat per ascens (×1,74 s/m)</div>
 
   <!-- DISTÀNCIA -->
-  <div class="form-section">
-    <div class="form-section-title">Distància</div>
-    <div class="field">
-      <label>Kilòmetres</label>
-      <input id="p-km" type="number" inputmode="decimal" step="0.01" placeholder="10.0" oninput="autoCalc('dist')"/>
-      <div class="unit">KM</div>
-    </div>
-  </div>
-
-  <!-- TEMPS -->
-  <div class="form-section">
-    <div class="form-section-title">Temps total</div>
-    <div style="display:flex;align-items:center;gap:0.3rem">
-      <div style="flex:1;display:flex;flex-direction:column">
-        <span style="font-size:0.58rem;color:var(--muted);font-weight:700;letter-spacing:0.1em;text-transform:uppercase;margin-bottom:0.2rem">H</span>
-        <input id="p-h" type="number" inputmode="numeric" min="0" max="99" placeholder="0" style="text-align:center;background:var(--bg2);border:1px solid var(--border);border-radius:6px;color:var(--text);font-family:var(--font-b);font-size:1rem;font-weight:600;padding:0.6rem 0.4rem;outline:none;width:100%" oninput="autoCalc('temps')"/>
-      </div>
-      <div style="font-family:var(--font-h);font-size:1.6rem;color:var(--muted);padding-top:0.8rem">:</div>
-      <div style="flex:1;display:flex;flex-direction:column">
-        <span style="font-size:0.58rem;color:var(--muted);font-weight:700;letter-spacing:0.1em;text-transform:uppercase;margin-bottom:0.2rem">MIN</span>
-        <input id="p-m" type="number" inputmode="numeric" min="0" max="59" placeholder="50" style="text-align:center;background:var(--bg2);border:1px solid var(--border);border-radius:6px;color:var(--text);font-family:var(--font-b);font-size:1rem;font-weight:600;padding:0.6rem 0.4rem;outline:none;width:100%" oninput="autoCalc('temps')"/>
-      </div>
-      <div style="font-family:var(--font-h);font-size:1.6rem;color:var(--muted);padding-top:0.8rem">:</div>
-      <div style="flex:1;display:flex;flex-direction:column">
-        <span style="font-size:0.58rem;color:var(--muted);font-weight:700;letter-spacing:0.1em;text-transform:uppercase;margin-bottom:0.2rem">SEG</span>
-        <input id="p-s" type="number" inputmode="numeric" min="0" max="59" placeholder="00" style="text-align:center;background:var(--bg2);border:1px solid var(--border);border-radius:6px;color:var(--text);font-family:var(--font-b);font-size:1rem;font-weight:600;padding:0.6rem 0.4rem;outline:none;width:100%" oninput="autoCalc('temps')"/>
-      </div>
-    </div>
-    <div style="font-size:0.65rem;color:var(--muted);font-weight:500;margin-top:0.5rem">⚡ Sincronitzat amb el camp "Temps total" de Sudor</div>
-  </div>
-
-  <!-- RITME (calculat o introduït) -->
-  <div class="form-section">
-    <div class="form-section-title">Ritme</div>
-    <div class="field">
-      <label>Min/km (introdueix o es calcula sol)</label>
-      <input id="ritme" type="text" inputmode="numeric" placeholder="5:30" maxlength="5" oninput="autoColon(this); autoCalc('ritme')"/>
-      <div class="unit">MIN/KM</div>
-    </div>
-    <div id="autocalc-hint" style="font-size:0.65rem;color:var(--accent3);font-weight:600;margin-top:0.4rem;display:none">⚡ Camp calculat automàticament</div>
+  <div class="form-section" style="border-color:rgba(56,189,248,0.3)">
+    <div style="font-size:0.65rem;font-weight:700;color:var(--accent);letter-spacing:0.1em;text-transform:uppercase;margin-bottom:0.3rem">⚡ Distància · Temps · Ritme</div>
+    <div style="font-size:0.78rem;color:var(--muted);font-weight:500">Introdueix els valors a la <strong style="color:var(--text)">barra inferior</strong>. Els 3 camps es calculen automàticament entre ells.</div>
   </div>
   <div class="toggle-row" onclick="toggleAscens()">
     <span class="toggle-label">Afegir ascens D+ <span style="font-size:0.6rem;background:var(--accent2);color:#0d1117;padding:0.15rem 0.4rem;border-radius:3px;margin-left:0.4rem;font-weight:700">AJUSTAT</span></span>
@@ -1111,137 +1203,179 @@ const $ = id => document.getElementById(id);
 const fv = id => parseFloat($(id).value) || 0;
 const iv = id => parseInt($(id).value) || 0;
 
-// ── CAMPS COMPARTITS I CÀLCUL AUTOMÀTIC ──
-// Els 3 camps: distància (p-km, r-dist), temps (p-h/p-m/p-s), ritme (ritme, r-ritme)
-// Qualsevol 2 d'ells calcula el 3r automàticament i sincronitza totes les pàgines.
+// ── CAMPS COMPARTITS — font única: panell flotant DRT ──
+// drt-km, drt-h, drt-m, drt-s, drt-ritme són la ÚNICA font de veritat.
+// Tots els camps de les pàgines (p-km, ritme, r-dist, r-ritme, p-h/m/s)
+// es copien DES del panell, mai al revés.
 
-// Grups d'IDs per a cada variable lògica
 const IDS = {
   dist:  ['p-km', 'r-dist'],
-  ritme: ['ritme', 'r-ritme'],
-  // temps: llegim sempre de p-h/p-m/p-s (únics)
+  ritme: ['ritme', 'r-ritme', 'sab-ritme'],
 };
 
-// Llegir valors actuals
-function getDist()  { return parseFloat($('p-km')?.value || $('r-dist')?.value) || 0; }
+// ── GETTERS (llegeixen del panell DRT) ──
+function getDist()      { return parseFloat($('drt-km')?.value)    || 0; }
+function getRitmeMin()  { return parsePace($('drt-ritme')?.value   || ''); }
 function getTempsSecs() {
-  const h = parseInt($('p-h')?.value) || 0;
-  const m = parseInt($('p-m')?.value) || 0;
-  const s = parseInt($('p-s')?.value) || 0;
+  const h = parseInt($('drt-h')?.value) || 0;
+  const m = parseInt($('drt-m')?.value) || 0;
+  const s = parseInt($('drt-s')?.value) || 0;
   return h*3600 + m*60 + s;
 }
-function getRitmeMin() { return parsePace($('ritme')?.value || $('r-ritme')?.value || ''); }
 
-// Escriure temps als camps h:m:s
-function setTemps(totalSecs) {
-  if (totalSecs <= 0) return;
-  const h = Math.floor(totalSecs / 3600);
-  const m = Math.floor((totalSecs % 3600) / 60);
-  const s = Math.round(totalSecs % 60);
-  ['p-h'].forEach(id => { if ($(id)) $(id).value = h || ''; });
-  ['p-m'].forEach(id => { if ($(id)) $(id).value = m || ''; });
-  ['p-s'].forEach(id => { if ($(id)) $(id).value = s || ''; });
-}
-
-// Escriure distància a tots els camps dist
+// ── SETTERS (escriuen al panell DRT i propaguen a les pàgines) ──
 function setDist(km) {
   if (km <= 0) return;
-  IDS.dist.forEach(id => { if ($(id)) $(id).value = Math.round(km*100)/100; });
+  const v = Math.round(km*100)/100;
+  if ($('drt-km')) $('drt-km').value = v;
+  IDS.dist.forEach(id => { if ($(id)) $(id).value = v; });
+  localStorage.setItem('shared_dist', v);
 }
-
-// Escriure ritme a tots els camps ritme
+function setTemps(totalSecs) {
+  if (totalSecs <= 0) return;
+  const h = Math.floor(totalSecs/3600);
+  const m = Math.floor((totalSecs%3600)/60);
+  const s = Math.round(totalSecs%60);
+  if ($('drt-h')) $('drt-h').value = h||'';
+  if ($('drt-m')) $('drt-m').value = m||'';
+  if ($('drt-s')) $('drt-s').value = s||'';
+  ['p-h'].forEach(id => { if ($(id)) $(id).value = h||''; });
+  ['p-m'].forEach(id => { if ($(id)) $(id).value = m||''; });
+  ['p-s'].forEach(id => { if ($(id)) $(id).value = s||''; });
+  localStorage.setItem('shared_h', h);
+  localStorage.setItem('shared_m', m);
+  localStorage.setItem('shared_s', s);
+}
 function setRitme(minPerKm) {
   if (minPerKm <= 0) return;
   const str = formatPace(minPerKm);
+  if ($('drt-ritme')) $('drt-ritme').value = str;
   IDS.ritme.forEach(id => { if ($(id)) $(id).value = str; });
+  localStorage.setItem('shared_ritme', str);
 }
 
-// Motor principal: donat quin camp ha canviat, calcula el 3r
+// ── MOTOR CÀLCUL ──
 let _autoCalcLock = false;
-function autoCalc(changed) {
+function _runCalc(changed, showHintFn) {
   if (_autoCalcLock) return;
   _autoCalcLock = true;
-
   const dist  = getDist();
   const secs  = getTempsSecs();
   const ritme = getRitmeMin();
 
-  // Mostra hint si es calcula alguna cosa
-  const showHint = (id) => {
-    const el = $(id);
-    if (el) { el.style.display = 'block'; setTimeout(() => el.style.display = 'none', 2500); }
-  };
-
   if (changed === 'dist' && dist > 0) {
-    if (secs > 0 && ritme <= 0) {
-      // dist + temps → ritme
-      const r = (secs / 60) / dist;
-      setRitme(r);
-      showHint('autocalc-hint');
-    } else if (ritme > 0 && secs <= 0) {
-      // dist + ritme → temps
-      setTemps(dist * ritme * 60);
-      showHint('autocalc-hint');
-    }
-    // Sincronitza als altres camps dist
-    IDS.dist.forEach(id => { if ($(id) && parseFloat($(id).value) !== dist) $(id).value = dist; });
+    if      (secs > 0  && ritme <= 0) { setRitme((secs/60)/dist);  showHintFn('Ritme calculat'); }
+    else if (ritme > 0 && secs  <= 0) { setTemps(dist*ritme*60);   showHintFn('Temps calculat'); }
+    else { localStorage.setItem('shared_dist', dist); }
   }
-
   if (changed === 'temps' && secs > 0) {
-    if (dist > 0 && ritme <= 0) {
-      // temps + dist → ritme
-      const r = (secs / 60) / dist;
-      setRitme(r);
-      showHint('autocalc-hint');
-    } else if (ritme > 0 && dist <= 0) {
-      // temps + ritme → dist
-      const d = (secs / 60) / ritme;
-      setDist(d);
-      showHint('autocalc-hint');
-    }
+    if      (dist  > 0 && ritme <= 0) { setRitme((secs/60)/dist);  showHintFn('Ritme calculat'); }
+    else if (ritme > 0 && dist  <= 0) { setDist((secs/60)/ritme);  showHintFn('Distància calculada'); }
+    else { localStorage.setItem('shared_h', Math.floor(secs/3600)); localStorage.setItem('shared_m', Math.floor((secs%3600)/60)); localStorage.setItem('shared_s', secs%60); }
   }
-
   if (changed === 'ritme' && ritme > 0) {
-    if (dist > 0 && secs <= 0) {
-      // ritme + dist → temps
-      setTemps(dist * ritme * 60);
-      showHint('autocalc-hint');
-    } else if (secs > 0 && dist <= 0) {
-      // ritme + temps → dist
-      const d = (secs / 60) / ritme;
-      setDist(d);
-      showHint('autocalc-hint');
-    }
-    // Sincronitza als altres camps ritme
-    const str = formatPace(ritme);
-    IDS.ritme.forEach(id => { if ($(id) && $(id).value !== str) $(id).value = str; });
+    if      (dist > 0 && secs  <= 0) { setTemps(dist*ritme*60);    showHintFn('Temps calculat'); }
+    else if (secs > 0 && dist  <= 0) { setDist((secs/60)/ritme);   showHintFn('Distància calculada'); }
+    else { localStorage.setItem('shared_ritme', formatPace(ritme)); }
   }
-
-  // Guarda a localStorage per sincronitzar entre pàgines
-  if (dist > 0)  localStorage.setItem('shared_dist', dist);
-  if (secs > 0)  { localStorage.setItem('shared_h', Math.floor(secs/3600)); localStorage.setItem('shared_m', Math.floor((secs%3600)/60)); localStorage.setItem('shared_s', secs%60); }
-  if (ritme > 0) localStorage.setItem('shared_ritme', formatPace(ritme));
-
   _autoCalcLock = false;
 }
 
-// Sincronitza camps en carregar/canviar pàgina
-function syncSharedFields() {
-  const dist  = localStorage.getItem('shared_dist');
-  const h     = localStorage.getItem('shared_h');
-  const m2    = localStorage.getItem('shared_m');
-  const s2    = localStorage.getItem('shared_s');
-  const ritme = localStorage.getItem('shared_ritme');
-  const temp  = localStorage.getItem('shared_temp');
-  const hum   = localStorage.getItem('shared_hum');
+// Cridat des dels camps del PANELL DRT
+function drtCalc(changed) {
+  _runCalc(changed, (msg) => {
+    const h = $('drt-hint');
+    if (h) h.textContent = '⚡ ' + msg;
+  });
+}
 
-  if (dist)  IDS.dist.forEach(id  => { if ($(id) && !$(id).value) $(id).value = dist; });
-  if (h)     { if ($('p-h') && !$('p-h').value) $('p-h').value = h; }
-  if (m2)    { if ($('p-m') && !$('p-m').value) $('p-m').value = m2; }
-  if (s2)    { if ($('p-s') && !$('p-s').value) $('p-s').value = s2; }
-  if (ritme) IDS.ritme.forEach(id => { if ($(id) && !$(id).value) $(id).value = ritme; });
-  if (temp)  ['temp','r-temp'].forEach(id => { if ($(id) && !$(id).value) $(id).value = temp; });
-  if (hum)   ['humetat','r-hum'].forEach(id => { if ($(id) && !$(id).value) $(id).value = hum; });
+// Cridat des dels camps de PÀGINA (copia primer el valor cap al DRT)
+function autoCalc(changed) {
+  if (changed === 'dist') {
+    const v = parseFloat($('p-km')?.value || $('r-dist')?.value) || 0;
+    if (v > 0 && $('drt-km')) $('drt-km').value = v;
+  }
+  if (changed === 'ritme') {
+    const v = $('ritme')?.value || $('r-ritme')?.value || '';
+    if (v && $('drt-ritme')) $('drt-ritme').value = v;
+  }
+  if (changed === 'temps') {
+    const h = parseInt($('p-h')?.value)||0, m = parseInt($('p-m')?.value)||0, s = parseInt($('p-s')?.value)||0;
+    if ((h+m+s) > 0) { if ($('drt-h')) $('drt-h').value=h||''; if ($('drt-m')) $('drt-m').value=m||''; if ($('drt-s')) $('drt-s').value=s||''; }
+  }
+  _runCalc(changed, (msg) => {
+    const el = $('autocalc-hint') || $('autocalc-hint-sudor');
+    if (el) { el.textContent='⚡ '+msg; el.style.display='block'; setTimeout(()=>el.style.display='none',2000); }
+  });
+}
+
+// ── PANELL FLOTANT ──
+function toggleDRT() {
+  const panel   = $('drt-panel');
+  const overlay = $('drt-overlay');
+  const fab     = $('fab-btn');
+  if (panel.classList.contains('show')) {
+    tancarDRT();
+  } else {
+    syncDRTfromStorage();
+    panel.classList.add('show');
+    overlay.classList.add('show');
+    fab.classList.add('open');
+    fab.textContent = '✕';
+  }
+}
+
+function tancarDRT() {
+  $('drt-panel').classList.remove('show');
+  $('drt-overlay').classList.remove('show');
+  $('fab-btn').classList.remove('open');
+  $('fab-btn').textContent = '⚡';
+  // Propaga els valors del panell a tots els camps de pàgina
+  syncPageFieldsFromDRT();
+}
+
+function syncDRTfromStorage() {
+  const d = localStorage.getItem('shared_dist');
+  const h = localStorage.getItem('shared_h');
+  const m = localStorage.getItem('shared_m');
+  const s = localStorage.getItem('shared_s');
+  const r = localStorage.getItem('shared_ritme');
+  if (d && $('drt-km')    && !$('drt-km').value)    $('drt-km').value    = d;
+  if (h && $('drt-h')     && !$('drt-h').value)     $('drt-h').value     = h;
+  if (m && $('drt-m')     && !$('drt-m').value)     $('drt-m').value     = m;
+  if (s && $('drt-s')     && !$('drt-s').value)     $('drt-s').value     = s;
+  if (r && $('drt-ritme') && !$('drt-ritme').value) $('drt-ritme').value = r;
+}
+
+function syncPageFieldsFromDRT() {
+  const d = getDist(), r = getRitmeMin(), secs = getTempsSecs();
+  if (d > 0)    IDS.dist.forEach(id  => { if ($(id)) $(id).value = d; });
+  if (r > 0)    IDS.ritme.forEach(id => { if ($(id)) $(id).value = formatPace(r); });
+  if (secs > 0) {
+    const hh=Math.floor(secs/3600), mm=Math.floor((secs%3600)/60), ss=Math.round(secs%60);
+    ['p-h'].forEach(id=>{if ($(id)) $(id).value=hh||'';});
+    ['p-m'].forEach(id=>{if ($(id)) $(id).value=mm||'';});
+    ['p-s'].forEach(id=>{if ($(id)) $(id).value=ss||'';});
+  }
+}
+
+function drtClear() {
+  ['drt-km','drt-h','drt-m','drt-s','drt-ritme'].forEach(id => { if ($(id)) $(id).value=''; });
+  ['shared_dist','shared_h','shared_m','shared_s','shared_ritme'].forEach(k => localStorage.removeItem(k));
+  IDS.dist.forEach(id  => { if ($(id)) $(id).value=''; });
+  IDS.ritme.forEach(id => { if ($(id)) $(id).value=''; });
+  ['p-h','p-m','p-s'].forEach(id => { if ($(id)) $(id).value=''; });
+  const h = $('drt-hint'); if (h) h.textContent='';
+}
+
+function syncSharedFields() {
+  syncDRTfromStorage();
+  syncPageFieldsFromDRT();
+  // Temperatura i humetat
+  const temp = localStorage.getItem('shared_temp');
+  const hum  = localStorage.getItem('shared_hum');
+  if (temp) ['temp','r-temp'].forEach(id  => { if ($(id) && !$(id).value) $(id).value = temp; });
+  if (hum)  ['humetat','r-hum'].forEach(id => { if ($(id) && !$(id).value) $(id).value = hum; });
 }
 
 function saveShared(id, val) {
@@ -1251,10 +1385,8 @@ function saveShared(id, val) {
 }
 
 function initSharedListeners() {
-  // Temperatura i humetat (no formen part del trinomi dist/temps/ritme)
   ['temp','r-temp','humetat','r-hum'].forEach(id => {
-    const el = $(id);
-    if (!el) return;
+    const el = $(id); if (!el) return;
     el.addEventListener('input', () => saveShared(id, el.value));
   });
 }
@@ -2091,5 +2223,121 @@ window.addEventListener('appinstalled', () => {
   deferredPrompt = null;
 });
 </script>
+<!-- ══ BARRA FLOTANT GLOBAL: Distància · Temps · Ritme ══ -->
+<div id="floatbar" style="
+  position: fixed;
+  bottom: 0; left: 0; right: 0;
+  z-index: 200;
+  background: rgba(13,17,23,0.97);
+  backdrop-filter: blur(16px);
+  border-top: 1px solid var(--border);
+  padding: 0.5rem 0.8rem 0.6rem;
+  max-width: 100vw;
+">
+  <!-- Capçalera barra -->
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:0.4rem">
+    <div style="font-size:0.58rem;font-weight:700;letter-spacing:0.14em;text-transform:uppercase;color:var(--accent)">⚡ Distància · Temps · Ritme</div>
+    <div id="float-hint" style="font-size:0.6rem;font-weight:700;color:var(--accent3);display:none">Calculat automàticament</div>
+  </div>
+
+  <!-- 3 camps en fila -->
+  <div style="display:grid;grid-template-columns:1fr 1.6fr 1fr;gap:0.4rem;align-items:end">
+
+    <!-- DISTÀNCIA -->
+    <div>
+      <div style="font-size:0.55rem;font-weight:700;color:var(--muted);letter-spacing:0.1em;text-transform:uppercase;margin-bottom:0.2rem">KM</div>
+      <input id="p-km"
+        type="number" inputmode="decimal" step="0.01" placeholder="—"
+        oninput="autoCalc('dist')"
+        style="width:100%;background:var(--surface);border:1px solid var(--border);border-radius:6px;
+               color:var(--text);font-family:var(--font-h);font-size:1.1rem;font-weight:800;
+               padding:0.45rem 0.5rem;outline:none;text-align:center;"/>
+    </div>
+
+    <!-- TEMPS h:m:s -->
+    <div>
+      <div style="font-size:0.55rem;font-weight:700;color:var(--muted);letter-spacing:0.1em;text-transform:uppercase;margin-bottom:0.2rem;text-align:center">TEMPS</div>
+      <div style="display:flex;align-items:center;gap:0.15rem">
+        <input id="p-h"
+          type="number" inputmode="numeric" min="0" max="99" placeholder="0"
+          oninput="autoCalc('temps')"
+          style="flex:1;background:var(--surface);border:1px solid var(--border);border-radius:6px;
+                 color:var(--text);font-family:var(--font-h);font-size:1.1rem;font-weight:800;
+                 padding:0.45rem 0.2rem;outline:none;text-align:center;min-width:0"/>
+        <span style="color:var(--muted);font-weight:700;font-size:0.9rem">:</span>
+        <input id="p-m"
+          type="number" inputmode="numeric" min="0" max="59" placeholder="00"
+          oninput="autoCalc('temps')"
+          style="flex:1.2;background:var(--surface);border:1px solid var(--border);border-radius:6px;
+                 color:var(--text);font-family:var(--font-h);font-size:1.1rem;font-weight:800;
+                 padding:0.45rem 0.2rem;outline:none;text-align:center;min-width:0"/>
+        <span style="color:var(--muted);font-weight:700;font-size:0.9rem">:</span>
+        <input id="p-s"
+          type="number" inputmode="numeric" min="0" max="59" placeholder="00"
+          oninput="autoCalc('temps')"
+          style="flex:1.2;background:var(--surface);border:1px solid var(--border);border-radius:6px;
+                 color:var(--text);font-family:var(--font-h);font-size:1.1rem;font-weight:800;
+                 padding:0.45rem 0.2rem;outline:none;text-align:center;min-width:0"/>
+      </div>
+    </div>
+
+    <!-- RITME -->
+    <div>
+      <div style="font-size:0.55rem;font-weight:700;color:var(--muted);letter-spacing:0.1em;text-transform:uppercase;margin-bottom:0.2rem">MIN/KM</div>
+      <input id="ritme"
+        type="text" inputmode="numeric" placeholder="—" maxlength="5"
+        oninput="autoColon(this); autoCalc('ritme')"
+        style="width:100%;background:var(--surface);border:1px solid var(--border);border-radius:6px;
+               color:var(--text);font-family:var(--font-h);font-size:1.1rem;font-weight:800;
+               padding:0.45rem 0.5rem;outline:none;text-align:center;"/>
+    </div>
+  </div>
+</div>
+
+<!-- ── PANELL FLOTANT DISTÀNCIA/RITME/TEMPS ── -->
+<div class="drt-overlay" id="drt-overlay" onclick="tancarDRT()"></div>
+
+<div class="drt-panel" id="drt-panel">
+  <div class="drt-handle"></div>
+  <div class="drt-title">
+    <span>⚡ Dist · Ritme · Temps</span>
+    <span style="font-size:0.65rem;color:var(--muted);font-family:var(--font-b);font-weight:600">Introdueix 2, calcula el 3r</span>
+  </div>
+
+  <div class="drt-grid">
+    <div class="drt-field">
+      <div class="drt-label">Distància</div>
+      <input class="drt-input" id="drt-km" type="number" inputmode="decimal" step="0.01" placeholder="10.0" oninput="drtCalc('dist')"/>
+      <div style="font-size:0.6rem;color:var(--accent2);font-weight:700">KM</div>
+    </div>
+    <div class="drt-field">
+      <div class="drt-label">Ritme</div>
+      <input class="drt-input" id="drt-ritme" type="text" inputmode="numeric" placeholder="5:30" maxlength="5" oninput="autoColon(this); drtCalc('ritme')"/>
+      <div style="font-size:0.6rem;color:var(--accent2);font-weight:700">MIN/KM</div>
+    </div>
+  </div>
+
+  <div class="drt-field" style="margin-bottom:0.6rem">
+    <div class="drt-label">Temps total</div>
+    <div class="drt-time-row">
+      <input id="drt-h" type="number" inputmode="numeric" min="0" max="99" placeholder="0" oninput="drtCalc('temps')"/>
+      <span class="drt-sep">:</span>
+      <input id="drt-m" type="number" inputmode="numeric" min="0" max="59" placeholder="00" oninput="drtCalc('temps')"/>
+      <span class="drt-sep">:</span>
+      <input id="drt-s" type="number" inputmode="numeric" min="0" max="59" placeholder="00" oninput="drtCalc('temps')"/>
+    </div>
+    <div style="font-size:0.6rem;color:var(--accent2);font-weight:700;margin-top:0.2rem">H : MIN : SEG</div>
+  </div>
+
+  <div class="drt-hint" id="drt-hint"></div>
+
+  <div class="drt-btn-row">
+    <button class="drt-btn clear" onclick="drtClear()">↺ Netejar</button>
+    <button class="drt-btn calc" onclick="tancarDRT()">✓ Aplicar</button>
+  </div>
+</div>
+
+<button class="fab" id="fab-btn" onclick="toggleDRT()" title="Dist · Ritme · Temps">⚡</button>
+
 </body>
 </html>
